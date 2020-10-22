@@ -1,0 +1,33 @@
+/**
+ * This file is part of
+ * SSAGES - Software Suite for Advanced General Ensemble Simulations
+ *
+ * Copyright 2016 Hythem Sidky <hsidky@nd.edu>
+ *                Julian Helfferich <julian.helfferich@gmail.com>
+ *
+ * SSAGES is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * SSAGES is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with SSAGES.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef __SSAGESCONFIG_H
+#define __SSAGESCONFIG_H
+
+#define SSAGES_VERSION "@SSAGES_VERSION@"
+
+#define EXTRA_CONFIG "@EXTRA_CONFIG@"
+
+#define GIT_SHA1 "@GIT_SHA1@"
+
+#define BUILD_TYPE_@BUILD_TYPE_NAME@
+
+#endif

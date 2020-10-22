@@ -1,0 +1,169 @@
+
+diff -ruN /gromacs-original/src/gromacs/mdrun/legacymdrunoptions.cpp /gromacs-ssages/src/gromacs/mdrun/legacymdrunoptions.cpp
+--- /gromacs-original/src/gromacs/mdrun/legacymdrunoptions.cpp
++++ /gromacs-ssages/src/gromacs/mdrun/legacymdrunoptions.cpp
+@@ -60,6 +60,8 @@
+ #include "gromacs/mdtypes/commrec.h"
+ #include "gromacs/utility/arraysize.h"
+ #include "gromacs/utility/fatalerror.h"
++
++#include "GromacsHook.h"
+ 
+ namespace gmx
+ {
+@@ -162,7 +164,11 @@
+     if (ms != nullptr)
+     {
+         cr->nnodes = cr->nnodes / ms->nsim;
+-        MPI_Comm_split(MPI_COMM_WORLD, ms->sim, cr->sim_nodeid, &cr->mpi_comm_mysim);
++        // Get SSAGES communicator and assign.
++        auto& ssages = SSAGES::GromacsHook::Instance();
++        auto comm = ssages.GetCommunicator();
++        cr->mpi_comm_mysim = comm;
++        //MPI_Comm_split(MPI_COMM_WORLD, ms->sim, cr->sim_nodeid, &cr->mpi_comm_mysim);
+         cr->mpi_comm_mygroup = cr->mpi_comm_mysim;
+         MPI_Comm_rank(cr->mpi_comm_mysim, &cr->sim_nodeid);
+         MPI_Comm_rank(cr->mpi_comm_mygroup, &cr->nodeid);
+diff -ruN /gromacs-original/src/programs/CMakeLists.txt /gromacs-ssages/src/programs/CMakeLists.txt
+--- /gromacs-original/src/programs/CMakeLists.txt
++++ /gromacs-ssages/src/programs/CMakeLists.txt
+@@ -35,6 +35,12 @@
+ file(GLOB MDRUN_SOURCES mdrun/*.cpp)
+ # make an "object library" that we can re-use for multiple targets
+ add_library(mdrun_objlib OBJECT ${MDRUN_SOURCES})
++add_library(mdrun STATIC $<TARGET_OBJECTS:mdrun_objlib>)
++install(TARGETS mdrun
++        EXPORT mdrun
++        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
++        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
++        COMPONENT libraries)
+ 
+ if(GMX_FAHCORE)
+     # The lack of a real source file here alongside the object library
+diff -ruN /gromacs-original/src/gromacs/mdrun/md.cpp /gromacs-ssages/src/gromacs/mdrun/md.cpp
+--- /gromacs-original/src/gromacs/mdrun/md.cpp
++++ /gromacs-ssages/src/gromacs/mdrun/md.cpp
+@@ -69,6 +69,7 @@
+ #include "gromacs/imd/imd.h"
+ #include "gromacs/listed-forces/manage-threading.h"
+ #include "gromacs/math/functions.h"
++#include "gromacs/math/units.h"
+ #include "gromacs/math/utilities.h"
+ #include "gromacs/math/vec.h"
+ #include "gromacs/math/vectypes.h"
+@@ -134,6 +135,7 @@
+ #include "gromacs/utility/logger.h"
+ #include "gromacs/utility/real.h"
+ #include "gromacs/utility/smalloc.h"
++#include "GromacsHook.h"
+ 
+ #include "integrator.h"
+ #include "replicaexchange.h"
+@@ -587,6 +589,52 @@
+         fprintf(fplog, "\n");
+     }
+ 
++    // Setup SSAGES singleton and lambdas.
++    auto& ssages = SSAGES::GromacsHook::Instance();
++    ssages.SetPeriodicBoundaryConditions(ir->ePBC);
++    ssages.SetGMXPush([&](){
++        // Begin SSAGES.
++        auto natoms = top_global->natoms;
++        int* ids = nullptr;
++        if(PAR(cr) && DOMAINDECOMP(cr))
++        {
++            natoms = dd_numHomeAtoms(*cr->dd);
++            ids = cr->dd->globalAtomIndices.data();
++        }
++        ssages.PushToGromacs(
++            natoms,
++            ids,
++            mdatoms->typeA,
++            mdatoms->massT,
++            as_rvec_array(state->x.data()),
++            as_rvec_array(state->v.data()),
++            as_rvec_array(f.data()),
++            force_vir);
++    });
++    ssages.SetGMXPull([&](){
++        // Begin SSAGES.
++        auto natoms = top_global->natoms;
++        int* ids = nullptr;
++        if(PAR(cr) && DOMAINDECOMP(cr))
++        {
++            natoms = dd_numHomeAtoms(*cr->dd);
++            ids = cr->dd->globalAtomIndices.data();
++        }
++        ssages.PullToSSAGES(
++            step,
++            natoms,
++            ids,
++            mdatoms->typeA,
++            mdatoms->massT,
++            as_rvec_array(state->x.data()),
++            as_rvec_array(state->v.data()),
++            as_rvec_array(f.data()),
++            state->box,
++            enerd->term[F_TEMP],
++            enerd->term[F_EPOT],
++            BOLTZ);
++    });
++
+     walltime_accounting_start_time(walltime_accounting);
+     wallcycle_start(wcycle, ewcRUN);
+     print_start(fplog, cr, walltime_accounting, "mdrun");
+@@ -678,6 +726,9 @@
+         }
+     }
+ 
++    ssages.SyncToSSAGES();
++    ssages.PreSimulationHook();
++
+     /* and stop now if we should */
+     bLastStep = (bLastStep || (ir->nsteps >= 0 && step_rel > ir->nsteps));
+     while (!bLastStep)
+@@ -880,6 +931,9 @@
+                      fr, ppForceWorkload, vsite, mu_tot, t, ed ? ed->getLegacyED() : nullptr,
+                      (bNS ? GMX_FORCE_NS : 0) | force_flags,
+                      ddOpenBalanceRegion, ddCloseBalanceRegion);
++
++            ssages.SyncToSSAGES();
++            ssages.PostIntegrationHook();
+         }
+ 
+         if (EI_VV(ir->eI) && !startingFromCheckpoint)
+@@ -1475,9 +1529,13 @@
+         /* If bIMD is TRUE, the master updates the IMD energy record and sends positions to VMD client */
+         IMD_prep_energies_send_positions(ir->bIMD && MASTER(cr), bIMDstep, ir->imd, enerd, step, bCalcEner, wcycle);
+ 
++        ssages.PostStepHook();
+     }
+     /* End of main MD loop */
+
++    ssages.SyncToSSAGES();
++    ssages.PostSimulationHook();
++
+     /* Closing TNG files can include compressing data. Therefore it is good to do that
+      * before stopping the time measurements. */
+     mdoutf_tng_close(outf);
+diff -ruN /gromacs-original/CMakeLists.txt /gromacs-ssages/CMakeLists.txt
+--- /gromacs-original/CMakeLists.txt
++++ /gromacs-ssages/CMakeLists.txt
+@@ -104,14 +104,14 @@
+ # These variables collect libraries that GROMACS requires for
+ # linking. They should be appended to with list(APPEND ${name}
+ # new-library) calls. They are:
+ #  - Libraries that are required for libgromacs (only)
+-set(GMX_EXTRA_LIBRARIES "")
++set(GMX_EXTRA_LIBRARIES "${GMX_EXTRA_LIBRARIES}")
+ #  - Libraries that are required for all code in the repository
+-set(GMX_COMMON_LIBRARIES "")
++set(GMX_COMMON_LIBRARIES "${GMX_COMMON_LIBRARIES}")
+ #  - Libraries that all code linked against libgromacs needs
+ #    (i.e., something that is exposed in installed headers).
+-set(GMX_PUBLIC_LIBRARIES "")
++set(GMX_PUBLIC_LIBRARIES "${GMX_PUBLIC_LIBRARIES}")
+ 
+ ########################################################################
+ # Check and warn if cache generated on a different host is being reused
+ ########################################################################
