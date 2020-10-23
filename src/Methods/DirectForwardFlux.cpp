@@ -289,6 +289,13 @@ namespace SSAGES
 		std::vector<unsigned int> picks;
 		picks.resize(npicks);
 
+		// if the initial flux has already been realized or 
+		//the calculation starts from a non-zero surface (for restart)
+		if ( ! _initialFluxFlag)
+			{
+				_N[0]=_N0Target;
+			}
+
 		if(IsMasterRank(world_))
 		{
 			std::uniform_int_distribution<int> distribution(0,_N[0]-1);
