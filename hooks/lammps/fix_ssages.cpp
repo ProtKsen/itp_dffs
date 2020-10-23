@@ -255,10 +255,43 @@ namespace LAMMPS_NS
 		virial[3] = -vir(0,1);
 		virial[4] = -vir(0,2);
 		virial[5] = -vir(1,2);
-	}
+
+		// Update the HMatrix
+		const auto& HMatrix = snapshot_->GetHMatrix(); 
+	    domain->h[0] = HMatrix(0,0);
+	    domain->h[1] = HMatrix(1,1);
+	    domain->h[2] = HMatrix(2,2);
+	    domain->h[3] = HMatrix(2,1);
+	    domain->h[4] = HMatrix(2,0);
+	    domain->h[5] = HMatrix(1,0);
+
+		// Update orthogonal box global bounds
+		domain->boxhi[0] = HMatrix(0,0);
+	    domain->boxhi[1] = HMatrix(1,1);
+	    domain->boxhi[2] = HMatrix(2,2);
+
+		// Update array form of dimensions
+		domain->prd[0] = HMatrix(0,0);
+	    domain->prd[1] = HMatrix(1,1);
+	    domain->prd[2] = HMatrix(2,2);
+
+		// Update global box dimensions
+		domain-> xprd = HMatrix(0,0);
+	    domain-> yprd = HMatrix(1,1);
+	    domain-> zprd = HMatrix(2,2);
+	    
+		// Update array form of half dimensions	    
+	    domain->prd_half[0] = 0.5*HMatrix(0,0);
+	    domain->prd_half[1] = 0.5*HMatrix(1,1);
+	    domain->prd_half[2] = 0.5*HMatrix(2,2);
+	    
+		// Update global box half dimensions
+	    domain-> xprd_half = 0.5*HMatrix(0,0);
+	    domain-> yprd_half = 0.5*HMatrix(1,1);
+	    domain-> zprd_half = 0.5*HMatrix(2,2);
+	}	
 
 	FixSSAGES::~FixSSAGES()
 	{
 	}
 }
-
