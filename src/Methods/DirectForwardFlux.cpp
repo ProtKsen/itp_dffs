@@ -53,7 +53,8 @@ namespace SSAGES
 		else if (initializeQueueFlag)
 		{
 			InitializeQueue(snapshot,cvs);
-			PrintQueue();
+			if (world_.rank() == 0) // only one processor prints the queue
+				PrintQueue();
 		}
 		// Else check the FFS interfaces
 		else
