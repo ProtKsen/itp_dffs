@@ -1,7 +1,3 @@
-// обеспечиает изменение объема системы при загрузки новой конфигурации
-// замещает файл fix_ssages.cpp  /misc/home/u2662/SSAGES-cavitation/hooks/lammps
-// замены в строках: 65, 276-287 
-
 #include <iostream>
 #include <numeric>
 #include "fix_ssages.h"
@@ -60,11 +56,6 @@ namespace LAMMPS_NS
 		auto& charges = snapshot_->GetCharges();
 		charges.resize(n);
 
-		auto& flags = snapshot_->GetImageFlags();
-		flags.resize(n);
-		
-	//	auto& HMatrix = snapshot_->GetHMatrix();  // ????????????????
-
 		SyncToSnapshot();
 		Hook::PreSimulationHook();
 	}
@@ -116,8 +107,6 @@ namespace LAMMPS_NS
 		frc.resize(n);
 		auto& masses = snapshot_->GetMasses();
 		masses.resize(n);
-		auto& flags = snapshot_->GetImageFlags();
-		flags.resize(n);
 
 		// Labels and ids for future work on only updating
 		// atoms that have changed.
@@ -208,11 +197,6 @@ namespace LAMMPS_NS
 			vel[i][1] = atom_->v[i][1];
 			vel[i][2] = atom_->v[i][2];
 
-			// Image flags. 
-			flags[i][0] = (atom_->image[i] & IMGMASK) - IMGMAX;;
-			flags[i][1] = (atom_->image[i] >> IMGBITS & IMGMASK) - IMGMAX;
-			flags[i][2] = (atom_->image[i] >> IMG2BITS) - IMGMAX;
-
 			ids[i] = atom_->tag[i];
 			types[i] = atom_->type[i];
 
@@ -234,7 +218,6 @@ namespace LAMMPS_NS
 		const auto& frc = snapshot_->GetForces();
 		const auto& masses = snapshot_->GetMasses();
 		const auto& charges = snapshot_->GetCharges();
-		
 
 		// Labels and ids for future work on only updating
 		// atoms that have changed.
@@ -272,43 +255,10 @@ namespace LAMMPS_NS
 		virial[3] = -vir(0,1);
 		virial[4] = -vir(0,2);
 		virial[5] = -vir(1,2);
-		
-		// update hmatrix ??????????????????
-	    const auto& HMatrix = snapshot_->GetHMatrix(); 
-	    domain->h[0] = HMatrix(0,0);
-	    domain->h[1] = HMatrix(1,1);
-	    domain->h[2] = HMatrix(2,2);
-	    domain->h[3] = HMatrix(2,1);
-	    domain->h[4] = HMatrix(2,0);
-	    domain->h[5] = HMatrix(1,0);
-	    
-	    domain->boxhi[0] = HMatrix(0,0);
-	    domain->boxhi[1] = HMatrix(1,1);
-	    domain->boxhi[2] = HMatrix(2,2);
-	    
-	    domain->prd[0] = HMatrix(0,0);
-	    domain->prd[1] = HMatrix(1,1);
-	    domain->prd[2] = HMatrix(2,2);
-	    
-	    domain-> xprd = HMatrix(0,0);
-	    domain-> yprd = HMatrix(1,1);
-	    domain-> zprd = HMatrix(2,2);
-	    
-	    domain->h_inv[0] = 1.0/HMatrix(0,0);
-	    domain->h_inv[1] = 1.0/HMatrix(1,1);
-	    domain->h_inv[2] = 1.0/HMatrix(2,2);
-	    
-	    domain->prd_half[0] = 0.5*HMatrix(0,0);
-	    domain->prd_half[1] = 0.5*HMatrix(1,1);
-	    domain->prd_half[2] = 0.5*HMatrix(2,2);
-	    
-	    domain-> xprd_half = 0.5*HMatrix(0,0);
-	    domain-> yprd_half = 0.5*HMatrix(1,1);
-	    domain-> zprd_half = 0.5*HMatrix(2,2);
-	    
 	}
 
 	FixSSAGES::~FixSSAGES()
 	{
 	}
 }
+
