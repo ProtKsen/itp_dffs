@@ -47,7 +47,8 @@ namespace SSAGES
 			if (!_initialFluxFlag)
 			{ //only enter here once
 				InitializeQueue(snapshot,cvs);
-			  	PrintQueue();
+				if (world_.rank() == 0) // only one processor prints the queue
+			  		PrintQueue();
 			}
 		}
 		else if (initializeQueueFlag)
