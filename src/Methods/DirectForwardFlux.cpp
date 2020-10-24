@@ -189,37 +189,65 @@ namespace SSAGES
 
 		//------------------------------
 		//print info
-		if ((success_local) || (fail_local))
+		
+		if (((success_local) || (fail_local)) && comm_.rank()==0)
 		{
-			std::cout << "Iteration: "<< iteration_ << ", proc " << world_.rank() << "\n";
+			std::system("mkdir -p outputs");
+			std::string FileNameOutput = "outputs/outpu t_"+std::to_string(world_.rank())+".txt";
+			std::ofstream f_out(FileNameOutput,std::ios_base::out | std::ios_base::app);
+		
+			std::cout << "Iteration: "<< iteration_ << ", proc " << world_.rank() << std::endl;
+			f_out << "Iteration: "<< iteration_ << ", proc " << world_.rank() << std::endl;
 		  	if (success_local)
 			{
 				std::cout << "Successful attempt from interface " << _current_interface 
 						<< " l"<<myFFSConfigID.l<<"-n"<<myFFSConfigID.n<<"-a"<<myFFSConfigID.a
-						<< " (cvvalue_previous: " << _cvvalue_previous << " cvvalue " << _cvvalue << " interface["<<_current_interface+1<<"] = " << _interfaces[_current_interface+1] << "\n";
+						<< " (cvvalue_previous: " << _cvvalue_previous << " cvvalue " << _cvvalue << " interface["<<_current_interface+1<<"] = " << _interfaces[_current_interface+1] << std::endl;
+				f_out << "Successful attempt from interface " << _current_interface 
+						<< " l"<<myFFSConfigID.l<<"-n"<<myFFSConfigID.n<<"-a"<<myFFSConfigID.a
+						<< " (cvvalue_previous: " << _cvvalue_previous << " cvvalue " << _cvvalue << " interface["<<_current_interface+1<<"] = " << _interfaces[_current_interface+1] << std::endl;
 		  	}
 		  	if (fail_local)
 			{
 				std::cout << "Failed attempt from interface " << _current_interface 
 						<< " l"<<myFFSConfigID.l<<"-n"<<myFFSConfigID.n<<"-a"<<myFFSConfigID.a
 						<< " (cvvalue_previous: " << _cvvalue_previous << " cvvalue " << _cvvalue << " interface[0] = "<< _interfaces[0] << "\n"
-						<< "nfailuretotal: " << _nfailure_total << "\n";
+						<< "nfailuretotal: " << _nfailure_total << std::endl;
+				f_out << "Failed attempt from interface " << _current_interface 
+						<< " l"<<myFFSConfigID.l<<"-n"<<myFFSConfigID.n<<"-a"<<myFFSConfigID.a
+						<< " (cvvalue_previous: " << _cvvalue_previous << " cvvalue " << _cvvalue << " interface[0] = "<< _interfaces[0] << "\n"
+						<< "nfailuretotal: " << _nfailure_total << std::endl;
 		  	}
 			
 			std::cout << "A: ";
+			f_out << "A: ";
 			for (auto a : _A)
+			{
 				std::cout << a << " "; 
+				f_out << a << " "; 
+			}
 			std::cout << "\n";
+			f_out << "\n";
 
 			std::cout << "S: ";
+			f_out << "S: ";
 			for (auto s : _S)
+			{
 				std::cout << s << " ";
+				f_out << s << " ";
+			}
 			std::cout << "\n";
+			f_out << "\n";
 			
 			std::cout << "M: ";
+			f_out << "M: ";
 			for (auto m : _M)
+			{
 				std::cout << m << " ";
+				f_out << m << " ";
+			}
 			std::cout << "\n";
+			f_out << "\n";
 		}
 		//------------------------------
 	   
