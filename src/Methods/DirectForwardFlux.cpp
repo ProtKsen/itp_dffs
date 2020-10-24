@@ -116,43 +116,61 @@ namespace SSAGES
 		MPI_Allgather(&fail_local,1,MPI_UNSIGNED,failures.data(),1,MPI_UNSIGNED,world_);
 	   
 		int success_count = 0, fail_count = 0;
+		
 		// I dont pass the queue information between procs but I do syncronize 'successes' and 'failures'
 		//   as a reuslt all proc should have the same queue throughout the simulation
-		for (int i=0;i<world_.size();i++)
-		{
-			int l,n,a,lprev,nprev,aprev;
-			// write config to lambda+1
-			lprev = myFFSConfigID.l;
-			nprev = myFFSConfigID.n;
-			aprev = myFFSConfigID.a;
 
-			if (successes[i] == true)
-			{ 
-				if (i == world_.rank())
-				{
-					//update ffsconfigid's l,n,a
-					l = _current_interface + 1;
-					n = _S[_current_interface] + success_count;
-					a = 0;
-					FFSConfigID newid = FFSConfigID(l,n,a,lprev,nprev,aprev);
-					WriteFFSConfiguration(snapshot,newid,1);
+		// Mey be the MPI_Barrier(comm_) should be there?
+        int nproc_comm; 
+		int nproc_world;
+        MPI_Comm_size(comm_, &nproc_comm);    
+        MPI_Comm_size(world_, &nproc_world);
+        int numb_walk = nproc_world/nproc_comm; // the number of walkers
+        int myWalk;  // current walker
+        myWalk = world_.rank()/nproc_comm;        
+        
+        
+		for (int n_of_walk = 0; n_of_walk < numb_walk; n_of_walk++)
+		{
+			for (int n_in_comm = 0; n_in_comm < size; n_in_comm++)
+			{
+				//MPI_Barrier(comm_); // ???
+			   	i = n_of_walk * nproc_comm + n_in_comm
+			   	int l,n,a,lprev,nprev,aprev;
+			   	// write config to lambda+1
+			   	lprev = myFFSConfigID.l;
+			   	nprev = myFFSConfigID.n;
+			   	aprev = myFFSConfigID.a;
+
+				if (successes[i] == true)
+				{ 
+					if (n_of_walk == myWalk && n_in_comm == comm_.rank())
+					{
+						//update ffsconfigid's l,n,a
+						l = _current_interface + 1;
+						n = _S[_current_interface] + success_count;
+						a = 0;
+						FFSConfigID newid = FFSConfigID(l,n,a,lprev,nprev,aprev);
+						WriteFFSConfiguration(snapshot,newid,1);
+					}
+					if (n_in_comm == comm_.rank())
+						success_count++;
 				}
-				success_count++;
-			}
-			if (failures[i] == true)
-			{ 
-				if (i == world_.rank())
-				{
-					//update ffsconfigid's l,n,a
-					l = 0; //only fail at lambda 0, 
-					n = _nfailure_total + fail_count;
-					a = 0;
-					FFSConfigID newid = FFSConfigID(l,n,a,lprev,nprev,aprev);
-					WriteFFSConfiguration(snapshot,newid,0);
+				if (failures[i] == true)
+				{ 
+					if (n_of_walk == myWalk && n_in_comm == comm_.rank())
+					{
+						//update ffsconfigid's l,n,a
+						l = 0; //only fail at lambda 0, 
+						n = _nfailure_total + fail_count;
+						a = 0;
+						FFSConfigID newid = FFSConfigID(l,n,a,lprev,nprev,aprev);
+						WriteFFSConfiguration(snapshot,newid,0);
+					}
+					if (n_in_comm == comm_.rank())
+						fail_count++;
 				}
-				fail_count++;
-			}
-		}
+		    }
 
 		//update trajectories
 		if (_saveTrajectories)
