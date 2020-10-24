@@ -378,6 +378,7 @@ namespace SSAGES
 		// now that queue is populated initialize tasks for all processors
 		// ==============================
 		unsigned int shouldpop_local = true;
+		MPI_Barrier(comm_); // ???
 		PopQueueMPI(snapshot,cvs,shouldpop_local);
 	}	
 }
