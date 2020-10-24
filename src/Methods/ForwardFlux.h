@@ -356,10 +356,10 @@ namespace SSAGES
 			std::normal_distribution<double> distribution(0,1);
 			for (unsigned int i = 0; i < _N0Target ; i++)
 			{
-				Lambda0ConfigLibrary[i].l = 0;
+				Lambda0ConfigLibrary[i].l = _current_interface;
 				Lambda0ConfigLibrary[i].n = i;
 				Lambda0ConfigLibrary[i].a = 0;
-				Lambda0ConfigLibrary[i].lprev = 0;
+				Lambda0ConfigLibrary[i].lprev = _current_interface;
 				Lambda0ConfigLibrary[i].nprev = i;
 				Lambda0ConfigLibrary[i].aprev = 0;
 				//FFSConfigID ffsconfig = Lambda0ConfigLibrary[i];
