@@ -49,8 +49,8 @@ namespace SSAGES
 	{
         std::cout << "Post simulation\n";
 
-        ComputeCommittorProbability(snapshot);
-        ComputeTransitionProbabilities();
+        //ComputeCommittorProbability(snapshot);
+        //ComputeTransitionProbabilities();
 
         if (_saveTrajectories)
         	ReconstructTrajectories(snapshot);	
