@@ -199,9 +199,11 @@ namespace SSAGES
         // Check if the required number of initial configurations are created, if so print a message, and compute the initial flux.
         if (_N[0] >= _N0Target)
 		{
-            std::cout << "Initial flux calculation was successfully completed" << std::endl;
+			if (comm_.rank()==0)
+            	std::cout << "Initial flux calculation was successfully completed" << std::endl;
             // Call a function to compute the actual flux and output the data
-            WriteInitialFlux();
+            if (world_.rank() == 0)
+				WriteInitialFlux();
             //responsible for setting _initialFluxFlag = false when finished
             _initialFluxFlag = false;
         } 
