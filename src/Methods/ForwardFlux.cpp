@@ -126,34 +126,51 @@ namespace SSAGES
         if (hascrossed == 1)
         	success_local = true;
 
+		auto timestep = snapshot->GetIteration(); 
+        if ((timestep == 1)&&(_cvvalue_previous > _interfaces[0])&&(_cvvalue > _interfaces[0])) 
+			success_local = true;
+			
         //for each traj that crossed to lambda0 in forward direction, we need to write it to disk (FFSConfigurationFile)
         MPI_Allgather(&success_local,1,MPI_UNSIGNED,successes.data(),1,MPI_UNSIGNED,world_);
 
+		int nproc_comm; 
+		int nproc_world;
+        MPI_Comm_size(comm_, &nproc_comm);    
+        MPI_Comm_size(world_, &nproc_world);
+        int numb_walk = nproc_world/nproc_comm; // the number of walkers
+        int myWalk;  // current walker
+        myWalk = world_.rank()/nproc_comm; 
         int success_count = 0;
-        for (int i = 0; i < world_.size(); i++)
-		{
-			// Since we are in State A, the values of lprev, nprev, aprev are all zero.
-			if (successes[i] == true)
-			{ 
-				if (i == world_.rank())
-				{
-					int l,n,a,lprev,nprev,aprev;
-					//update ffsconfigid's l,n,a
-					//note lprev == l for initial interface
-					l = 0;
-					n = _N[0] + success_count;
-					a = 0;
-					lprev = l;
-					nprev = n;
-					aprev = a;
 
-					FFSConfigID newid = FFSConfigID(l,n,a,lprev,nprev,aprev);
-					Lambda0ConfigLibrary.emplace_back(l,n,a,lprev,nprev,aprev);
-					WriteFFSConfiguration(snapshot,newid,1);
+        for (int n_of_walk = 0; n_of_walk < numb_walk; n_of_walk++)
+		{
+			for (int n_in_comm = 0; n_in_comm < size; n_in_comm++)
+			{
+				i = n_of_walk * nproc_comm + n_in_comm
+				if (successes[i] == true)
+				{ 
+					if (n_of_walk == myWalk && n_in_comm == comm_.rank())
+					{
+						int l,n,a,lprev,nprev,aprev;
+						//update ffsconfigid's l,n,a
+						//note lprev == l for initial interface
+						l = 0;
+						n = _N[0] + success_count;
+						a = 0;
+						lprev = l;
+						nprev = n;
+						aprev = a;
+
+						FFSConfigID newid = FFSConfigID(l,n,a,lprev,nprev,aprev);
+						Lambda0ConfigLibrary.emplace_back(l,n,a,lprev,nprev,aprev);
+						WriteFFSConfiguration(snapshot,newid,1);
+					}
+					if (n_in_comm == comm_.rank())
+						success_count++;
 				}
-				success_count++;
-			}    
-        }  
+				MPI_Barrier(comm_);    
+        	}
+		}  
 
         // all procs update correctly
         _N[0] += success_count;
