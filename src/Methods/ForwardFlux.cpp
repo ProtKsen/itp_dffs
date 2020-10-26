@@ -188,7 +188,7 @@ namespace SSAGES
         _N0TotalSimTime += N0SimTime;
 
         //print some info
-        if (success_local)
+        if (success_local && comm_.rank()==0)
 		{
         	std::cout << "Iteration: "<< iteration_ << ", proc " << world_.rank() << std::endl;
             std::cout << "Successful attempt. (cvvalue_previous: " << _cvvalue_previous << " cvvalue " << _cvvalue << " )" << std::endl;
