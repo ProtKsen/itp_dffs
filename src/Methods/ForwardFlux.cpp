@@ -222,8 +222,9 @@ namespace SSAGES
 			std::cerr << "Error! Unable to write " << filename << std::endl;
 			MPI_Abort(world_, EXIT_FAILURE);
 		}
+		int N_walk = world_.size()/comm_.size();
 		_fluxA0 = (double) (_N[0] / _N0TotalSimTime);
-		file << "number of walkers: " << world_.size() << std::endl;
+		file << "number of walkers: " << N_walk << std::endl;
 		file << "number of iterations: " << iteration_ << std::endl;
 		file << "Total simulation time: " << _N0TotalSimTime << std::endl;
 		file << "Initial flux: " << _fluxA0 << std::endl;
