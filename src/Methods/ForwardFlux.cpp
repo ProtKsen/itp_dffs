@@ -250,38 +250,51 @@ namespace SSAGES
 	
 	void ForwardFlux::WriteFFSConfiguration(Snapshot* snapshot, FFSConfigID& ffsconfig, bool wassuccess)
 	{
+		// may be need in synchronization?
 		const auto& positions = snapshot->GetPositions();
 		const auto& velocities = snapshot->GetVelocities();
 		const auto& atomID = snapshot->GetAtomIDs();
-        //unsigned natoms = snapshot->GetNumAtoms();
-		//const auto& dumpfilename = snapshot->GetSnapshotID();
-
+		const auto& HMatrix = snapshot->GetHMatrix();
+		const auto& timestep = snapshot->GetIteration();
+		int myWalk = snapshot->GetWalkerID();
         // Write the dump file out
-		std::ofstream file;
-        std::string filename;
-        if (wassuccess)
-          filename = _output_directory + "/l" + std::to_string(ffsconfig.l) + "-n" + std::to_string(ffsconfig.n) + ".dat";
-        else
-          filename = _output_directory + "/fail-l" + std::to_string(ffsconfig.l) + "-n" + std::to_string(ffsconfig.n) + ".dat";
+		//all processes in the communicator write their dump file part
 
- 		file.open(filename.c_str());
-        if(!file)
-		{
-			std::cerr << "Error! Unable to write " << filename << "\n"; 
-			MPI_Abort(world_, EXIT_FAILURE);
-		}
+	        std::ofstream f_out;
+			std::string filename;
+			if (wassuccess)
+            	filename = _output_directory + "/l" + std::to_string(ffsconfig.l) + "-n" + std::to_string(ffsconfig.n) + ".dat";
+            else
+            	filename = _output_directory + "/fail-l" + std::to_string(ffsconfig.l) + "-n" + std::to_string(ffsconfig.n) + ".dat";
+            
+            if (comm_.rank() == 0)
+            	f_out.open(filename,std::ios_base::out | std::ios_base::trunc); //file for coordinats
+            else
+            	f_out.open(filename,std::ios_base::out | std::ios_base::app);    
+                
+		    if(!f_out)
+		     {
+			   std::cerr << "Error! Unable to write " << filename << "\n"; 
+			   MPI_Abort(world_, EXIT_FAILURE);
+		     }
+		    if (comm_.rank() == 0) // нулевой процесс пишет шапку
+		     {
+				f_out << ffsconfig.lprev << " " << ffsconfig.nprev << " " << ffsconfig.aprev << 
+				" " << HMatrix(0,0) << " " << HMatrix(1,1) << " " << HMatrix(2,2) << " " << myWalk << " " << timestep << "\n";
+			 }
 
-        //first line gives ID of where it came from
-        file << ffsconfig.lprev << " " << ffsconfig.nprev << " " << ffsconfig.aprev << "\n";
-
-        // Then write positions and velocities
- 		for(size_t i = 0; i< atomID.size(); i++)
- 		//for(size_t i = 0; i< natoms; i++)
- 		{
- 			file<<atomID[i]<<" ";
- 			file<<positions[i][0]<<" "<<positions[i][1]<<" "<<positions[i][2]<<" ";
- 			file<<velocities[i][0]<<" "<<velocities[i][1]<<" "<<velocities[i][2]<<std::endl;
-		}
+            // Then write positions and velocities
+            if (wassuccess)
+              {
+ 		       for(size_t i = 0; i< atomID.size(); i++)
+ 	            {
+ 			       f_out<<atomID[i]<<" ";
+ 			       f_out<<positions[i][0]<<" "<<positions[i][1]<<" "<<positions[i][2]<<" ";
+ 			       f_out<<velocities[i][0]<<" "<<velocities[i][1]<<" "<<velocities[i][2]<<std::endl;
+		        }  
+		       }  
+            f_out.close();
+	  
     }
 
     void ForwardFlux::OpenTrajectoryFile(std::ofstream& file)
