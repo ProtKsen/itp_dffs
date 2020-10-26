@@ -381,21 +381,25 @@ namespace SSAGES
                         atomindex = i;
                 }
 
-                if(atomindex < 0)
+                // delete, since atoms for the entire communicator 
+				//are written in one file
+				//if(atomindex < 0)
+                //{
+                    //std::cout<<"error, could not locate atomID "<<tokens[0]<<" from dumpfile"<<std::endl;
+					//MPI_Abort(world_, EXIT_FAILURE);
+				//}
+				if(atomindex >= 0) // >=0 иначе теряем атом!!!
                 {
-                    std::cout<<"error, could not locate atomID "<<tokens[0]<<" from dumpfile"<<std::endl;
-					MPI_Abort(world_, EXIT_FAILURE);
+                	positions[atomindex][0] = std::stod(tokens[1]);
+                	positions[atomindex][1] = std::stod(tokens[2]);
+                	positions[atomindex][2] = std::stod(tokens[3]);
+                	velocities[atomindex][0] = std::stod(tokens[4]);
+                	velocities[atomindex][1] = std::stod(tokens[5]);
+                	velocities[atomindex][2] = std::stod(tokens[6]);
+
+                	for(auto& force : forces)
+                    	force.setZero();
 				}
-
-                positions[atomindex][0] = std::stod(tokens[1]);
-                positions[atomindex][1] = std::stod(tokens[2]);
-                positions[atomindex][2] = std::stod(tokens[3]);
-                velocities[atomindex][0] = std::stod(tokens[4]);
-                velocities[atomindex][1] = std::stod(tokens[5]);
-                velocities[atomindex][2] = std::stod(tokens[6]);
-
-                for(auto& force : forces)
-                    force.setZero();
             }
             // else throw error
             else
