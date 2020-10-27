@@ -135,7 +135,7 @@ namespace SSAGES
 			for (int n_in_comm = 0; n_in_comm < size; n_in_comm++)
 			{
 				//MPI_Barrier(comm_); // ???
-			   	i = n_of_walk * nproc_comm + n_in_comm
+			   	int i = n_of_walk * nproc_comm + n_in_comm
 			   	int l,n,a,lprev,nprev,aprev;
 			   	// write config to lambda+1
 			   	lprev = myFFSConfigID.l;
