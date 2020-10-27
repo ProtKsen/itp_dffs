@@ -429,50 +429,60 @@ namespace SSAGES
 
     void ForwardFlux::PopQueueMPI(Snapshot* snapshot, const CVList& cvs, unsigned int shouldpop_local)
 	{
-        std::vector<unsigned int> shouldpop (world_.size(),0);
-        MPI_Allgather(&shouldpop_local,1,MPI_UNSIGNED,shouldpop.data(),1,MPI_UNSIGNED,world_);
-
-        // I don't pass the queue information between procs, but I do syncronize 'shouldpop'.
-        // As a result, all proc should have the same queue throughout the simulation.
-		for (int i=0;i<world_.size();i++)
+        int myWalk;
+		int nproc_comm; 
+		int nproc_world;    
+        myWalk = snapshot->GetWalkerID();
+        MPI_Comm_size(comm_, &nproc_comm);
+        MPI_Comm_size(world_, &nproc_world);
+        int numb_walk = nproc_world/nproc_comm;   
+        
+    
+		for (int n_of_walk=0;n_of_walk<numb_walk;n_of_walk++)
 		{
-        	if (shouldpop[i] == true)
-		  	{ 
-				if (i == world_.rank())
-				{ //if rank matches read and pop
-					if (!FFSConfigIDQueue.empty())
-					{ //if queue has tasks
-						myFFSConfigID = FFSConfigIDQueue.front();
-						ReadFFSConfiguration (snapshot, myFFSConfigID,true);
+			for (int n_in_comm=0; n_in_comm<size; n_in_comm++)
+			{
+				int i = n_of_walk * nproc_comm + n_in_comm;
+				if (shouldpop[i] == true)
+		  	   	{ 
+					if (n_of_walk == myWalk)
+					{ //if rank matches read and pop
+						if (n_in_comm == comm_.rank())
+						{
+							if (!FFSConfigIDQueue.empty())
+					 		{ //if queue has tasks
+								myFFSConfigID = FFSConfigIDQueue.front();
+								ReadFFSConfiguration (snapshot, myFFSConfigID,true);
 						
-						//open new trajectory file, write first frame
-						if (_saveTrajectories)
-						{ 
-							OpenTrajectoryFile(_trajectory_file);
-							AppendTrajectoryFile(snapshot,_trajectory_file);
+								//open new trajectory file, write first frame
+								if (_saveTrajectories)
+								{ 
+									OpenTrajectoryFile(_trajectory_file);
+									AppendTrajectoryFile(snapshot,_trajectory_file);
+								}
+                        
+								//Trigger a rebuild of the CVs since we reset the positions
+								cvs[0]->Evaluate(*snapshot);
+								_cvvalue = cvs[0]->GetValue();
+								_cvvalue_previous = _cvvalue;
+								_pop_tried_but_empty_queue = false;
+								FFSConfigIDQueue.pop_front();
+					 		}
+							else
+							{ //queue is empty, need to wait for new tasks to come in
+								_pop_tried_but_empty_queue = true;
+							}
 						}
-
-						//Trigger a rebuild of the CVs since we reset the positions
-						cvs[0]->Evaluate(*snapshot);
-						_cvvalue = cvs[0]->GetValue();
-						_cvvalue_previous = _cvvalue;
-
-						_pop_tried_but_empty_queue = false;
-						FFSConfigIDQueue.pop_front();
 					}
 					else
-					{ //queue is empty, need to wait for new tasks to come in
-						_pop_tried_but_empty_queue = true;
+					{ //else if rank doesnt match, just pop 
+						if (!FFSConfigIDQueue.empty() && j == 0 )
+							FFSConfigIDQueue.pop_front();
 					}
-				}
-				else
-				{ //else if rank doesnt match, just pop 
-					if (!FFSConfigIDQueue.empty())
-						FFSConfigIDQueue.pop_front();
 				}
 			}
         }
-        // ==============================
+		MPI_Barrier(comm_);  // ????
     }
 
     void ForwardFlux::ComputeCommittorProbability(Snapshot *snapshot)
