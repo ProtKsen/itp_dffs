@@ -429,6 +429,9 @@ namespace SSAGES
 
     void ForwardFlux::PopQueueMPI(Snapshot* snapshot, const CVList& cvs, unsigned int shouldpop_local)
 	{
+		std::vector<unsigned int> shouldpop (world_.size(),0);
+        MPI_Allgather(&shouldpop_local,1,MPI_UNSIGNED,shouldpop.data(),1,MPI_UNSIGNED,world_);
+		
         int myWalk;
 		int nproc_comm; 
 		int nproc_world;    
@@ -440,7 +443,7 @@ namespace SSAGES
     
 		for (int n_of_walk=0;n_of_walk<numb_walk;n_of_walk++)
 		{
-			for (int n_in_comm=0; n_in_comm<size; n_in_comm++)
+			for (int n_in_comm=0; n_in_comm<nproc_comm; n_in_comm++)
 			{
 				int i = n_of_walk * nproc_comm + n_in_comm;
 				if (shouldpop[i] == true)
@@ -476,7 +479,7 @@ namespace SSAGES
 					}
 					else
 					{ //else if rank doesnt match, just pop 
-						if (!FFSConfigIDQueue.empty() && j == 0 )
+						if (!FFSConfigIDQueue.empty() && n_in_comm == 0 )
 							FFSConfigIDQueue.pop_front();
 					}
 				}
