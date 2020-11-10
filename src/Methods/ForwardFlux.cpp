@@ -363,7 +363,7 @@ namespace SSAGES
 			    tokens.push_back(buf);
 
             // first line contains the previous ffsconfig information
-            if ((line_count == 0) && (tokens.size() == 3))
+            if ((line_count == 0) && (tokens.size() >= 3))
 			{
                 ffsconfig.lprev = std::stoi(tokens[0]);
                 ffsconfig.nprev = std::stoi(tokens[1]);
