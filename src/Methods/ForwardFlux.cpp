@@ -168,7 +168,7 @@ namespace SSAGES
 					if (n_in_comm == comm_.rank())
 						success_count++;
 				}
-				MPI_Barrier(comm_);    
+				MPI_Barrier(comm_);  // ???    
         	}
 		}  
 
@@ -224,6 +224,7 @@ namespace SSAGES
 		}
 		int N_walk = world_.size()/comm_.size();
 		_fluxA0 = (double) (_N[0] / _N0TotalSimTime);
+		_N0TotalSimTime /= comm_.size()
 		file << "number of walkers: " << N_walk << std::endl;
 		file << "number of iterations: " << iteration_ << std::endl;
 		file << "Total simulation time: " << _N0TotalSimTime << std::endl;
