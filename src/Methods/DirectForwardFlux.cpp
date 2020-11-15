@@ -120,7 +120,6 @@ namespace SSAGES
 		// I dont pass the queue information between procs but I do syncronize 'successes' and 'failures'
 		//   as a reuslt all proc should have the same queue throughout the simulation
 
-		// Mey be the MPI_Barrier(comm_) should be there?
         int nproc_comm; 
 		int nproc_world;
         MPI_Comm_size(comm_, &nproc_comm);    
@@ -134,7 +133,6 @@ namespace SSAGES
 		{
 			for (int n_in_comm = 0; n_in_comm < nproc_comm; n_in_comm++)
 			{
-				//MPI_Barrier(comm_); // ???
 			   	int i = n_of_walk * nproc_comm + n_in_comm;
 			   	int l,n,a,lprev,nprev,aprev;
 			   	// write config to lambda+1
@@ -170,6 +168,7 @@ namespace SSAGES
 					if (n_in_comm == comm_.rank())
 						fail_count++;
 				}
+				MPI_Barrier(comm_); // for correct process of WriteFFSConfiguration
 		    }
 		}
 
