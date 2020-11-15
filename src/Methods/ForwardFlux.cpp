@@ -168,7 +168,7 @@ namespace SSAGES
 					if (n_in_comm == comm_.rank())
 						success_count++;
 				}
-				MPI_Barrier(comm_);  // ???    
+				MPI_Barrier(comm_);  // for correct process of  WriteFFSConfiguration  
         	}
 		}  
 
@@ -484,9 +484,9 @@ namespace SSAGES
 							FFSConfigIDQueue.pop_front();
 					}
 				}
+				MPI_Barrier(comm_);  // for correct process of  ReadFFSConfiguration  
 			}
         }
-		MPI_Barrier(comm_);  // ????
     }
 
     void ForwardFlux::ComputeCommittorProbability(Snapshot *snapshot)
