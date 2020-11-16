@@ -441,7 +441,8 @@ namespace SSAGES
         MPI_Comm_size(world_, &nproc_world);
         int numb_walk = nproc_world/nproc_comm;   
         
-    
+		std::ofstream file_test;
+		std::string filename_test = "test_" + std::to_string(myWalk) + "_" + std::to_string(comm_.rank()) + ".dat";
 		for (int n_of_walk=0;n_of_walk<numb_walk;n_of_walk++)
 		{
 			for (int n_in_comm=0; n_in_comm<nproc_comm; n_in_comm++)
@@ -484,7 +485,7 @@ namespace SSAGES
 							FFSConfigIDQueue.pop_front();
 					}
 				}
-				MPI_Barrier(comm_);  // for correct process of  ReadFFSConfiguration  
+				//MPI_Barrier(comm_);  // for correct process of  ReadFFSConfiguration  
 			}
         }
     }
