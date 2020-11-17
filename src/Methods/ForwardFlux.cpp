@@ -133,20 +133,16 @@ namespace SSAGES
         //for each traj that crossed to lambda0 in forward direction, we need to write it to disk (FFSConfigurationFile)
         MPI_Allgather(&success_local,1,MPI_UNSIGNED,successes.data(),1,MPI_UNSIGNED,world_);
 
-		int nproc_comm; 
-		int nproc_world;
-        MPI_Comm_size(comm_, &nproc_comm);    
-        MPI_Comm_size(world_, &nproc_world);
-        int numb_walk = nproc_world/nproc_comm; // the number of walkers
+        int numb_walk = world_.size()/comm_.size(); // the number of walkers
         int myWalk;  // current walker
-        myWalk = world_.rank()/nproc_comm; 
+        myWalk = world_.rank()/comm_.size(); 
         int success_count = 0;
 
         for (int n_of_walk = 0; n_of_walk < numb_walk; n_of_walk++)
 		{
-			for (int n_in_comm = 0; n_in_comm < nproc_comm; n_in_comm++)
+			for (int n_in_comm = 0; n_in_comm < comm_.size(); n_in_comm++)
 			{
-				int i = n_of_walk * nproc_comm + n_in_comm;
+				int i = n_of_walk * comm_.size() + n_in_comm;
 				if (successes[i] == true)
 				{ 
 					if (n_of_walk == myWalk && n_in_comm == comm_.rank())
@@ -434,18 +430,14 @@ namespace SSAGES
         MPI_Allgather(&shouldpop_local,1,MPI_UNSIGNED,shouldpop.data(),1,MPI_UNSIGNED,world_);
 		
         int myWalk;
-		int nproc_comm; 
-		int nproc_world;    
         myWalk = snapshot->GetWalkerID();
-        MPI_Comm_size(comm_, &nproc_comm);
-        MPI_Comm_size(world_, &nproc_world);
-        int numb_walk = nproc_world/nproc_comm;   
+        int numb_walk = world_.size()/comm_.size();   
         
 		for (int n_of_walk=0;n_of_walk<numb_walk;n_of_walk++)
 		{
-			for (int n_in_comm=0; n_in_comm<nproc_comm; n_in_comm++)
+			for (int n_in_comm=0; n_in_comm<comm_.size(); n_in_comm++)
 			{
-				int i = n_of_walk * nproc_comm + n_in_comm;
+				int i = n_of_walk * comm_.size() + n_in_comm;
 				if (shouldpop[i] == true)
 		  	   	{ 
 					if (n_of_walk == myWalk)
