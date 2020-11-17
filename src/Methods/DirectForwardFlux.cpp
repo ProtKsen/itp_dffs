@@ -122,7 +122,7 @@ namespace SSAGES
 
         int numb_walk = world_.size()/comm_.size(); // the number of walkers
         int myWalk;  // current walker
-        myWalk = snapshot->GetWalkerID();        
+        myWalk = world_.rank()/comm_.size();    
         
 		for (int n_of_walk = 0; n_of_walk < numb_walk; n_of_walk++)
 		{
