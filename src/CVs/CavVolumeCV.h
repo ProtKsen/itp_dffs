@@ -56,6 +56,7 @@ namespace SSAGES
         bool periodicz;
     };
 
+
     struct ParticleSystem
     {
         // constructor: this will set the correct values for all of the
@@ -65,6 +66,7 @@ namespace SSAGES
         unsigned int nlinks; // num links for particle to be liquid 
         double nsep;         // neighbour separation, if rij < nsep particles are neighbours
     }
+
 
     bool space(char c)    // for strings
     {
@@ -76,7 +78,28 @@ namespace SSAGES
         return !isspace(c);
     }
 
-    
+
+    std::vector<std::string> split(const std::string& str)  // splitting a string
+    {
+        typedef std::string::const_iterator iter;
+        std::vector<std::string> ret;
+
+        iter i = str.begin();
+        while (i != str.end()) {
+            // ignore leading blanks
+            i = find_if(i, str.end(), not_space);
+
+            // find end of next word
+            iter j = find_if(i, str.end(), space);
+
+            // copy the characters in [i,j)
+            if (i != str.end()) {
+                ret.push_back(std::string(i,j));
+            }
+        i = j;
+        }
+        return ret;
+    }
 
     //! Collective variable on the cavity volume of a box. 
     /*!
