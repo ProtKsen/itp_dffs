@@ -204,6 +204,27 @@ namespace SSAGES
         return numneigh_local;
     }
 
+
+    int number(int j, int l, int k, int num_cells)
+    // from j,l,k to n of cell
+    {
+        return (j%num_cells)*num_cells*num_cells+(l%num_cells)*num_cells+(k%num_cells);
+    }
+
+
+    void number_to_jlk (int numb, int &j, int &l, int &k, int num_cells)
+    // from n of cell to j,l,k
+    {
+        k = numb%num_cells;   
+	    int div = numb/num_cells;  
+	    l = div%num_cells;  
+	    div = div/num_cells;      
+	    j = div%num_cells;
+    }
+
+
+    
+
     //! Collective variable on the cavity volume of a box. 
     /*!
      * Collective variable on the cavity volume of a box. 
