@@ -55,7 +55,17 @@ namespace SSAGES
         double nsepsq;
         bool periodicz;
     };
-    
+
+    struct ParticleSystem
+    {
+        // constructor: this will set the correct values for all of the
+         // variables defined below.
+        ParticleSystem(std::string pfile);
+        Box simbox;
+        unsigned int nlinks; // num links for particle to be liquid 
+        double nsep;         // neighbour separation, if rij < nsep particles are neighbours
+    }
+
     //! Collective variable on the cavity volume of a box. 
     /*!
      * Collective variable on the cavity volume of a box. 
