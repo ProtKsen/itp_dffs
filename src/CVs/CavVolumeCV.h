@@ -27,9 +27,38 @@
 
 namespace SSAGES
 {
-    //! Collective variable on the volume of a box. 
+    class Box
+    {
+    public:
+        Box(){ }
+        Box(double lx, double ly, double lz, double ns = 1.5, bool pz = false):
+        lboxx(lx), lboxy(ly), lboxz(lz), nsep(ns), nsepsq(ns * ns), periodicz(pz){}
+
+        // functions for separation between two particles
+        inline void sep(const Particle& p1, const Particle& p2, double* s) const;
+        inline double sepsq(const Particle& p1, const Particle& p2) const;
+
+        // these ones also return whether the particles are neighbours
+        inline bool isneigh(double* s, double&r2) const;
+
+        // testing whether positions are valid (in box)
+        inline bool posvalid(double* pos) const;
+        inline bool getvalidifnot(double* pos) const;
+
+        inline void setdims(double lx, double ly, double lz);
+
+    private:
+        double lboxx;
+        double lboxy;
+        double lboxz;        
+        double nsep;
+        double nsepsq;
+        bool periodicz;
+    };
+    
+    //! Collective variable on the cavity volume of a box. 
     /*!
-     * Collective variable on the volume of a box. 
+     * Collective variable on the cavity volume of a box. 
      * 
      * \ingroup CVs
      */
