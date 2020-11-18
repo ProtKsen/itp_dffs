@@ -177,7 +177,32 @@ namespace SSAGES
     }
 
 
+    std::vector<int> getneigh(const std::vector<Particle>& particles, const std::vector<Particle>& allparticles, const Box& simbox,
+             std::vector<int>& numneigh)
+    {
+        std::vector<Particle>::size_type npar = particles.size();
+        std::vector<Particle>::size_type npar_tot = allparticles.size();
+        std::vector<int> numneigh_local(npar, 0);
+        double PI=3.14159265358979323846;
 
+        double r2;
+        double sep[3];
+        std::vector<Particle>::size_type i,j;
+   
+        for (int i = 0; i < npar; ++i) {
+            for (int j = 0; j < npar_tot; ++j) {
+                simbox.sep(particles[i], allparticles[j], sep);
+
+                if (simbox.isneigh(sep, r2)) {
+                    // particles i and j are neighbours
+                    ++numneigh[i];
+                }
+            }     
+            numneigh_local[i] = numneigh[i] - 1; 
+        } 
+
+        return numneigh_local;
+    }
 
     //! Collective variable on the cavity volume of a box. 
     /*!
