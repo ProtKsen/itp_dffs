@@ -223,7 +223,15 @@ namespace SSAGES
     }
 
 
-    
+    void check_for_bound(int &j, int num_cells)
+    {
+	    if (j == num_cells) {
+		    j = 0;
+	    }		
+	    if (j == -1) {
+		    j = num_cells - 1;
+	    }	
+    }
 
     //! Collective variable on the cavity volume of a box. 
     /*!
