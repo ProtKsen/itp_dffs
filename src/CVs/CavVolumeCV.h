@@ -101,6 +101,32 @@ namespace SSAGES
         return ret;
     }
 
+
+    std::map<std::string, std::string> readparams(const std::string fname)
+    {
+        std::map<std::string, std::string> params;
+        std::ifstream infile;
+        infile.open(fname.c_str());
+        std::string sline;
+        std::vector<std::string> spline;
+     
+        // warning: there is no real error checking here   
+        while (infile) 
+        { 
+            std::getline(infile,sline);
+
+            // comments # must be first char on line
+            if (sline[0] != '#') {
+                spline = split(sline);
+                if (spline.size() == 2) {
+                    params[spline[0]] = spline[1];
+                }
+            }
+        }
+        infile.close();
+        return params;
+    }
+
     //! Collective variable on the cavity volume of a box. 
     /*!
      * Collective variable on the cavity volume of a box. 
