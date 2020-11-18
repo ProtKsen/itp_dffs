@@ -156,12 +156,28 @@ namespace SSAGES
             sepz = sepz + lboxz;
         }
 
-
         s[0] = sepx;
         s[1] = sepy;
         s[2] = sepz;
         return;
     }
+
+
+    inline bool Box::isneigh(double *s, double& rsq) const   
+    // are particles neighbours
+    {
+        if ((std::abs(s[0]) < nsep) && (std::abs(s[1]) < nsep)
+            && (std::abs(s[2]) < nsep)) {
+            rsq = s[0] * s[0] + s[1] * s[1] + s[2] * s[2];
+            if (rsq < nsep * nsep) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+
 
     //! Collective variable on the cavity volume of a box. 
     /*!
