@@ -66,6 +66,18 @@ namespace SSAGES
         double nsep;         // neighbour separation, if rij < nsep particles are neighbours
     }
 
+    bool space(char c)    // for strings
+    {
+        return isspace(c);
+    }
+
+    bool not_space(char c)  // for strings
+    {
+        return !isspace(c);
+    }
+
+    
+
     //! Collective variable on the cavity volume of a box. 
     /*!
      * Collective variable on the cavity volume of a box. 
