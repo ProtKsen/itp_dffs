@@ -35,7 +35,7 @@
 #include "RouseModeCV.h"
 #include "TorsionalCV.h"
 #include "RMSDCV.h"
-#include "ÑavVolumeCV.h"
+#include "CavVolumeCV.h"
 #include "json/json.h"
 #include <stdexcept>
 
