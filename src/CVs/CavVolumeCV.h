@@ -127,6 +127,42 @@ namespace SSAGES
         return params;
     }
 
+
+    inline void Box::sep(const Particle& p1, const Particle& p2, double* s) const
+    // distance between particles
+    {
+        double sepx,sepy,sepz;
+        sepx = p1.pos[0] - p2.pos[0];  // use abs?
+        sepy = p1.pos[1] - p2.pos[1];
+        sepz = p1.pos[2] - p2.pos[2];
+     
+        if (sepx > 0.5 * lboxx) {
+            sepx = sepx - lboxx;
+        }
+        else if (sepx < -0.5 * lboxx) {
+            sepx = sepx + lboxx;
+        }
+        if (sepy > 0.5 * lboxy) {
+            sepy = sepy - lboxy;
+        }
+        else if (sepy < -0.5 * lboxy) {
+            sepy = sepy + lboxy;
+        }
+                
+        if (sepz > 0.5 * lboxz) {
+            sepz = sepz - lboxz;
+        }    
+        else if (sepz < -0.5 * lboxz) {
+            sepz = sepz + lboxz;
+        }
+
+
+        s[0] = sepx;
+        s[1] = sepy;
+        s[2] = sepz;
+        return;
+    }
+
     //! Collective variable on the cavity volume of a box. 
     /*!
      * Collective variable on the cavity volume of a box. 
