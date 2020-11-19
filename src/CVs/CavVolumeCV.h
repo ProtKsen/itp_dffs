@@ -87,18 +87,18 @@ namespace SSAGES
         Box simbox;
         unsigned int nlinks; // num links for particle to be liquid 
         double nsep;         // neighbour separation, if rij < nsep particles are neighbours
-    }
+    };
 
 
     bool space(char c)    // for strings
     {
         return isspace(c);
-    }
+    };
 
     bool not_space(char c)  // for strings
     {
         return !isspace(c);
-    }
+    };
 
 
     std::vector<std::string> split(const std::string& str)  // splitting a string
@@ -121,7 +121,7 @@ namespace SSAGES
         i = j;
         }
         return ret;
-    }
+    };
 
 
     std::map<std::string, std::string> readparams(const std::string fname)
@@ -147,42 +147,32 @@ namespace SSAGES
         }
         infile.close();
         return params;
-    }
+    };
 
 
     inline void Box::sep(const Particle& p1, const Particle& p2, double* s) const
     // distance between particles
     {
         double sepx,sepy,sepz;
-        sepx = p1.pos[0] - p2.pos[0];  // use abs?
-        sepy = p1.pos[1] - p2.pos[1];
-        sepz = p1.pos[2] - p2.pos[2];
+        sepx = std::abs(p1.pos[0] - p2.pos[0]);  // use abs?
+        sepy = std::abs(p1.pos[1] - p2.pos[1]);
+        sepz = std::abs(p1.pos[2] - p2.pos[2]);
      
         if (sepx > 0.5 * lboxx) {
-            sepx = sepx - lboxx;
-        }
-        else if (sepx < -0.5 * lboxx) {
-            sepx = sepx + lboxx;
+            sepx = lboxx - sepx;
         }
         if (sepy > 0.5 * lboxy) {
-            sepy = sepy - lboxy;
+            sepy = lboxy - sepy;
         }
-        else if (sepy < -0.5 * lboxy) {
-            sepy = sepy + lboxy;
-        }
-                
         if (sepz > 0.5 * lboxz) {
-            sepz = sepz - lboxz;
+            sepz = lboxz - sepz;
         }    
-        else if (sepz < -0.5 * lboxz) {
-            sepz = sepz + lboxz;
-        }
-
+        
         s[0] = sepx;
         s[1] = sepy;
         s[2] = sepz;
         return;
-    }
+    };
 
 
     inline bool Box::isneigh(double *s, double& rsq) const   
@@ -196,7 +186,7 @@ namespace SSAGES
             }
         }
         return false;
-    }
+    };
 
 
     std::vector<int> getneigh(const std::vector<Particle>& particles, const std::vector<Particle>& allparticles, const Box& simbox,
@@ -224,14 +214,14 @@ namespace SSAGES
         } 
 
         return numneigh_local;
-    }
+    };
 
 
     int number(int j, int l, int k, int num_cells)
     // from j,l,k to n of cell
     {
         return (j%num_cells)*num_cells*num_cells+(l%num_cells)*num_cells+(k%num_cells);
-    }
+    };
 
 
     void number_to_jlk (int numb, int &j, int &l, int &k, int num_cells)
@@ -242,7 +232,7 @@ namespace SSAGES
 	    l = div%num_cells;  
 	    div = div/num_cells;      
 	    j = div%num_cells;
-    }
+    };
 
 
     void check_for_bound(int &j, int num_cells)
@@ -253,7 +243,7 @@ namespace SSAGES
 	    if (j == -1) {
 		    j = num_cells - 1;
 	    }	
-    }
+    };
 
 
     //! Collective variable on the cavity volume of a box. 
