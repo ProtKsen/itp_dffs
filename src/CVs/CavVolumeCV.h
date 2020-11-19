@@ -24,9 +24,31 @@
 #include "Drivers/DriverException.h"
 #include "Snapshot.h"
 #include "schema.h"
+#include <numeric>
+#include "mpi.h"
+#include <ctime>
+#include <vector>
+#include <map>
+#include "typedefs.h"
+#include <math.h>
+#include <complex>
+#include "constants.h"
+#include <boost/graph/connected_components.hpp>
+#include "boost/multi_array.hpp"
+#include <omp.h>
+#include <queue>
+#include <stdlib.h>
+#include <algorithm>
 
 namespace SSAGES
 {
+    struct Particle
+    {
+        double pos[3];
+        char symbol; // for outputting e.g. jmol
+    };
+
+
     class Box
     {
     public:
@@ -232,6 +254,7 @@ namespace SSAGES
 		    j = num_cells - 1;
 	    }	
     }
+
 
     //! Collective variable on the cavity volume of a box. 
     /*!
