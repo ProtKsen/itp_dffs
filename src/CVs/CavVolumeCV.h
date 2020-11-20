@@ -410,6 +410,18 @@ namespace SSAGES
 	                numneigh[i] = temp_numneigh2[i];
                 }
 
+                enum PCLASS {LIQ, VAP};    //  LIQ == 0, VAP == 1 
+                std::vector<PCLASS> parclass(Ntot, LIQ);   
+                for (int i=0; i < Ntot; ++i) 
+                {
+	                if (numneigh[i] <= nlinks) {
+		                parclass[i] = VAP;
+		                ++n_VAP;
+	                }
+                };
+
+                
+
                 val_ = snapshot.GetVolume();
             }
             if(snapshot.GetCommunicator().rank() == 0)
