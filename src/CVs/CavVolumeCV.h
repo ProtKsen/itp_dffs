@@ -346,7 +346,24 @@ namespace SSAGES
 
                 std::string pfile="params.out.start.txt";
                 std::map<std::string, std::string> params = readparams(pfile);
+
+                double lboxx = HMatrix(0,0);
+                double lboxy = HMatrix(1,1);
+                double lboxz = HMatrix(2,2); 
+  
+                double nsep = atof(params["stillsep"].c_str());
+                std::map<std::string, bool> bmap;
+                bmap["True"] = true;
+                bmap["False"] = false;	 
+                bool zperiodic = bmap[params["zperiodic"]];
+                Box simbox = Box(lboxx,lboxy,lboxz,nsep,zperiodic);
+                unsigned int nlinks = atoi(params["numneighbors"].c_str());
+                unsigned int numcells1d = atoi(params["numcells"].c_str());
+
                 
+
+
+
                 val_ = snapshot.GetVolume();
             }
             if(snapshot.GetCommunicator().rank() == 0)
