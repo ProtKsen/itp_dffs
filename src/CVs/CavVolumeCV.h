@@ -219,18 +219,18 @@ namespace SSAGES
     int number(int j, int l, int k, int num_cells)
     // from j,l,k to n of cell
     {
-        return (j%num_cells)*num_cells*num_cells+(l%num_cells)*num_cells+(k%num_cells);
+        return (j % num_cells) * num_cells * num_cells + (l % num_cells) * num_cells + (k % num_cells);
     };
 
 
     void number_to_jlk (int numb, int &j, int &l, int &k, int num_cells)
     // from n of cell to j,l,k
     {
-        k = numb%num_cells;   
-	    int div = numb/num_cells;  
-	    l = div%num_cells;  
-	    div = div/num_cells;      
-	    j = div%num_cells;
+        k = numb % num_cells;   
+	    int div = numb / num_cells;  
+	    l = div % num_cells;  
+	    div = div / num_cells;      
+	    j = div % num_cells;
     };
 
 
@@ -269,12 +269,53 @@ namespace SSAGES
          */
         void Evaluate(const Snapshot& snapshot) override
         {
-            // Fill empty gradient. 
-			auto n = snapshot.GetNumAtoms();
-			std::fill(grad_.begin(), grad_.end(), Vector3{0,0,0});
-			grad_.resize(n, Vector3{0,0,0});
+            int comm_size ;
+            MPI_Comm_size(snapshot.GetCommunicator(), &comm_size);
+            int comm_rank;
+            MPI_Comm_rank(snapshot.GetCommunicator(), &comm_rank);
+            int world_rank;
+            MPI_Comm_rank(MPI_COMM_WORLD, &world_rank); 
 
-            val_ = snapshot.GetVolume();
+            int ncell_VAP = 0; // the number of vapour cells
+	        int npart_VAP=0; // the number of vapour particles
+
+            auto timestep = snapshot.GetIteration();
+            if (timestep % 1 == 0)  // 1 - check lambda on every step
+            {
+                // Fill empty gradient. 
+			    auto n = snapshot.GetNumAtoms();
+			    std::fill(grad_.begin(), grad_.end(), Vector3{0,0,0});
+			    grad_.resize(n, Vector3{0,0,0});
+
+                int Ntot = 0; // the whole number of atoms in Comm
+                MPI_Allreduce(&n, &Ntot, 1, MPI_INT, MPI_SUM, snapshot.GetCommunicator());
+    
+                // read atoms and box 
+                auto positions = snapshot.GetPositions(); 
+                auto velocities = snapshot.GetVelocities();
+                auto HMatrix = snapshot.GetHMatrix();
+                auto atomID = snapshot.GetAtomIDs();
+
+                double xpositions[n];
+                double ypositions[n];
+                double zpositions[n];
+                double allxpositions[Ntot];
+                double allypositions[Ntot];
+                double allzpositions[Ntot];
+
+                for (int i = 0; i < n; ++i) 
+                {
+		            xpositions[i] = positions[i][0];
+		            ypositions[i] = positions[i][1];
+		            zpositions[i] = positions[i][2];
+	            };
+
+                
+
+                std::string pfile="params.out.start.txt";
+
+                val_ = snapshot.GetVolume();
+            }
             if(snapshot.GetCommunicator().rank() == 0)
                 boxgrad_ = val_*Matrix3::Identity();
         }
