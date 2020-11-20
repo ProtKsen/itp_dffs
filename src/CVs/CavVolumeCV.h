@@ -323,6 +323,29 @@ namespace SSAGES
                 MPI_Allgatherv (&ypositions, n, MPI_DOUBLE, &allypositions, recvcounts, displs, MPI_DOUBLE, snapshot.GetCommunicator());
                 MPI_Allgatherv (&zpositions, n, MPI_DOUBLE, &allzpositions, recvcounts, displs, MPI_DOUBLE, snapshot.GetCommunicator());
 
+                std::vector<Particle> pars;
+                pars.resize(n);
+                Particle par;
+                for (int i = 0; i < n; ++i) 
+                {
+		            par.pos[0] = positions[i][0];
+		            par.pos[1] = positions[i][1];
+		            par.pos[2] = positions[i][2];
+	                pars[i]=par;
+	            }
+	 
+	            std::vector<Particle> allpars;
+	            allpars.resize(Ntot);
+                for (int i = 0; i < Ntot; ++i) 
+                {
+		            par.pos[0] = allxpositions[i];
+		            par.pos[1] = allypositions[i];
+		            par.pos[2] = allzpositions[i];
+	                allpars[i] = par;
+	            }
+
+                
+
                 std::string pfile="params.out.start.txt";
 
                 val_ = snapshot.GetVolume();
