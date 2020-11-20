@@ -310,7 +310,18 @@ namespace SSAGES
 		            zpositions[i] = positions[i][2];
 	            };
 
-                
+                int recvcounts[size];
+	            MPI_Allgather(&n, 1, MPI_INT, &recvcounts, 1, MPI_INT, snapshot.GetCommunicator()); 
+	            int displs[size];
+	            displs[0]=0;
+	            for (int i = 1; i < size; ++i) 
+                {
+		            displs[i] = displs[i-1] + recvcounts[i-1];
+	            }
+
+                MPI_Allgatherv (&xpositions, n, MPI_DOUBLE, &allxpositions, recvcounts, displs, MPI_DOUBLE, snapshot.GetCommunicator()); 
+                MPI_Allgatherv (&ypositions, n, MPI_DOUBLE, &allypositions, recvcounts, displs, MPI_DOUBLE, snapshot.GetCommunicator());
+                MPI_Allgatherv (&zpositions, n, MPI_DOUBLE, &allzpositions, recvcounts, displs, MPI_DOUBLE, snapshot.GetCommunicator());
 
                 std::string pfile="params.out.start.txt";
 
