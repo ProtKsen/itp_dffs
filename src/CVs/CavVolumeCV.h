@@ -344,10 +344,9 @@ namespace SSAGES
 	                allpars[i] = par;
 	            }
 
-                
-
                 std::string pfile="params.out.start.txt";
-
+                std::map<std::string, std::string> params = readparams(pfile);
+                
                 val_ = snapshot.GetVolume();
             }
             if(snapshot.GetCommunicator().rank() == 0)
