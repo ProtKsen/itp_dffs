@@ -396,6 +396,20 @@ namespace SSAGES
                     numneigh_local[i] -= 1;
                 }
 
+                int temp_numneigh[n];  
+                int temp_numneigh2[Ntot];
+                for (int i=0; i < n; ++i) 
+                {
+	                temp_numneigh[i] = numneigh_local[i];
+                }
+    
+                MPI_Allgatherv (&temp_numneigh, n, MPI_INT, &temp_numneigh2, recvcounts, displs, MPI_INT, snapshot.GetCommunicator());
+
+                for (int i=0; i < Ntot; ++i) 
+                {
+	                numneigh[i] = temp_numneigh2[i];
+                }
+
                 val_ = snapshot.GetVolume();
             }
             if(snapshot.GetCommunicator().rank() == 0)
