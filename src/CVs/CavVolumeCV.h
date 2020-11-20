@@ -310,11 +310,11 @@ namespace SSAGES
 		            zpositions[i] = positions[i][2];
 	            };
 
-                int recvcounts[size];
+                int recvcounts[comm_size];
 	            MPI_Allgather(&n, 1, MPI_INT, &recvcounts, 1, MPI_INT, snapshot.GetCommunicator()); 
-	            int displs[size];
+	            int displs[comm_size];
 	            displs[0]=0;
-	            for (int i = 1; i < size; ++i) 
+	            for (int i = 1; i < comm_size; ++i) 
                 {
 		            displs[i] = displs[i-1] + recvcounts[i-1];
 	            }
@@ -360,9 +360,41 @@ namespace SSAGES
                 unsigned int nlinks = atoi(params["numneighbors"].c_str());
                 unsigned int numcells1d = atoi(params["numcells"].c_str());
 
-                
+                //--------------Qdata----------------------------
+                std::vector<int> numneigh; // число соседей
+                numneigh.resize(Ntot, 0); // num neighbours for each particle   
 
+                std::vector<int> numneigh_local;
+                numneigh_local.resize(n, 0);
 
+                for (int i = 0; i < n; ++i) 
+                {
+                    for (int j = 0; j < Ntot; ++j) 
+                    {
+                        double sepx,sepy,sepz;
+                        sepx = std::abs(xpositions[i] - allxpositions[j]);
+                        sepy = std::abs(ypositions[i] - allypositions[j]);
+                        sepz = std::abs(zpositions[i] - allzpositions[j]);
+     
+                        if (sepx > 0.5 * lboxx) {
+                            sepx = lboxx - sepx;
+                        }
+                        if (sepy > 0.5 * lboxy) {
+                            sepy = lboxy - sepy;
+                        }
+                        if (sepz > 0.5 * lboxz) {
+                            sepz = lboxz - sepz;
+                        }
+                        
+                        double rsq = sepx*sepx + sepy*sepy + sepz*sepz;
+
+                        if (rsq < nsep * nsep) 
+					    {
+                            numneigh_local[i] += 1;
+					    }
+                    }
+                    numneigh_local[i] -= 1;
+                }
 
                 val_ = snapshot.GetVolume();
             }
