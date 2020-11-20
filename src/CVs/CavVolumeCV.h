@@ -181,7 +181,7 @@ namespace SSAGES
         if ((std::abs(s[0]) < nsep) && (std::abs(s[1]) < nsep)
             && (std::abs(s[2]) < nsep)) {
             rsq = s[0] * s[0] + s[1] * s[1] + s[2] * s[2];
-            if (rsq < nsep * nsep) {
+            if (rsq < nsep * nsep) {     // < or <=  ???
                 return true;
             }
         }
@@ -210,9 +210,8 @@ namespace SSAGES
                     ++numneigh[i];
                 }
             }     
-            numneigh_local[i] = numneigh[i] - 1; 
+            numneigh_local[i] = numneigh[i] - 1; // i and i partcile are not neighb
         } 
-
         return numneigh_local;
     };
 
