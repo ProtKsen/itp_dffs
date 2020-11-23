@@ -94,7 +94,7 @@ namespace SSAGES
             vector<int> tfcnums = largestclustertf(psystem, tfclass);
             vector<int> ldcnums = largestclusterld(psystem, ldclass);
 
-            val_ = snapshot.GetVolume();
+            val_ = csizetf(tfcnums);
             if(snapshot.GetCommunicator().rank() == 0)
                 boxgrad_ = val_*Matrix3::Identity();
         }
