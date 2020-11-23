@@ -54,7 +54,16 @@ set(SOURCE
 #    src/Constraints/Constraint.cpp
 #    src/Constraints/COPSSImage.cpp
     src/CVs/CollectiveVariable.cpp
-    src/CVc/orderparams/particlesystem.cpp
+    src/CVs/orderparams/particlesystem.cpp
+    src/CVs/orderparams/conncomponents.cpp
+    src/CVs/orderparams/diagonalize.cpp
+    src/CVs/orderparams/gtensor.cpp
+    src/CVs/orderparams/ldtool.cpp
+    src/CVs/orderparams/opfunctions.cpp
+    src/CVs/orderparams/orderparameters.cpp
+    src/CVs/orderparams/qdata.cpp
+    src/CVs/orderparams/qlmfunctions.cpp
+    src/CVs/orderparams/readwrite.cpp
     src/Loggers/Logger.cpp
     src/Validator/RequirementLoader.cpp
     src/JSON/jsoncpp.cpp
