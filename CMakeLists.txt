@@ -54,6 +54,7 @@ set(SOURCE
 #    src/Constraints/Constraint.cpp
 #    src/Constraints/COPSSImage.cpp
     src/CVs/CollectiveVariable.cpp
+    src/CVc/orderparams/particlesystem.cpp
     src/Loggers/Logger.cpp
     src/Validator/RequirementLoader.cpp
     src/JSON/jsoncpp.cpp

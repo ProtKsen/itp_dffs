@@ -38,6 +38,13 @@
 #include "CavVolumeCV.h"
 #include "json/json.h"
 #include <stdexcept>
+#include "orderparams/particlesystem.h"
+#include "orderparams/orderparameters.h"
+#include "orderparams/qdata.h"
+#include "orderparams/constants.h"
+#include "orderparams/utility.h"
+#include "orderparams/gtensor.h"
+
 
 namespace SSAGES
 {
