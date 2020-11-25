@@ -97,7 +97,7 @@ namespace SSAGES
                 MPI_Allreduce(&n, &Ntot, 1, MPI_INT, MPI_SUM, snapshot.GetCommunicator());
 
                 std::string pfile="params.out.start.txt";
-                ParticleSystem psystem(pfile, const SSAGES::Snapshot& snapshot);
+                ParticleSystem psystem(std::string pfile, const SSAGES::Snapshot& snapshot);
 
                 // compute the qlm data
                 // warning: at the moment the number of links, and the threshold

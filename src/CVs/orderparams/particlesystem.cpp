@@ -33,7 +33,7 @@ ParticleSystem::ParticleSystem(string pfile, const SSAGES::Snapshot& snapshot)
    auto positions = snapshot.GetPositions(); 
    auto velocities = snapshot.GetVelocities();
    auto HMatrix = snapshot.GetHMatrix();
-   auto atomID = snapshot.GetAtomID;
+   auto atomID = snapshot.GetAtomIDs();
    double xpositions[n];
    double ypositions[n];
    double zpositions[n];
