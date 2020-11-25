@@ -5,6 +5,7 @@
 #include<string>
 #include "box.h"
 #include "particle.h"
+#include "Snapshot.h"
 
 using std::vector;
 using std::string;
@@ -17,9 +18,10 @@ struct ParticleSystem
 {
    // constructor: this will set the correct values for all of the
    // variables defined below.
-   ParticleSystem(string pfile);
+   ParticleSystem(string pfile, const SSAGES::Snapshot& snapshot);
 
    // particle positions
+   vector<Particle> pars;
    vector<Particle> allpars;
    // simulation box
    Box simbox;
