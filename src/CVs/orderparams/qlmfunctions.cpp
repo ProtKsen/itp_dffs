@@ -35,13 +35,15 @@ vector<int> xtalpars(const vector<int>& linknums, const int nlinks)
 // Return a vector whose elements are number of 'links' for each
 // particle in qlm matrix.
 
-vector<int> getnlinks(const array2d& qlmt, const vector<int>& numneigh,
+vector<int> getnlinks(const array2d& qlmt, const array2d& qlmt_local, const vector<int>& numneigh,
                       const vector<vector<int> >& lneigh, const int nsurf,
                       const int nlinks, const double linkval,
-                      const int lval)
+                      const int lval, const int displs)
 {
-   array2d::index npar = qlmt.shape()[0];
-   vector<int> numlinks(npar, 0);
+   array2d::index npar = qlmt_local.shape()[0];
+   array2d::index Ntot = qlmt.shape()[0];
+   std::vector<int> numlinks_local(npar, 0);
+
    int nlin,k;
    double linval;
 
@@ -57,18 +59,18 @@ vector<int> getnlinks(const array2d& qlmt, const vector<int>& numneigh,
          linval = 0.0;
          for (int m = 0; m != 2 * lval + 1; ++m) {
             // dot product (sometimes denoted Sij)
-            linval += qlmt[i][m].real() * qlmt[k][m].real() +
-                      qlmt[i][m].imag() * qlmt[k][m].imag();
+            linval += qlmt_local[i][m].real() * qlmt[k][m].real() +
+                      qlmt_local[i][m].imag() * qlmt[k][m].imag();
          }
          if (linval >= linkval) {
             nlin = nlin + 1;
          }
       }
       // store number of links for this particle
-      numlinks[i] = nlin;                      
+      numlinks_local[i] = nlin;                      
    }
 
-   return numlinks;
+   return numlinks_local;
 }
 
 // average values in vector qlm. 
@@ -285,11 +287,15 @@ array2d qlmbars(const array2d& qlm, const vector<vector<int> >& lneigh,
 
 // Return matrix of qlm(i).  The matrix has dimensions [i,(2l + 1)]
 
-array2d qlms(const vector<Particle>& particles, const Box& simbox,
+array2d qlms(const std::vector<Particle>& particles,
+             const std::vector<Particle>& allparticles,
+             const Box& simbox,
              vector<int>& numneigh, vector<vector<int> >& lneigh,
-             const int lval)
+             const int lval, const int displs)
 {
    vector<Particle>::size_type npar = particles.size();
+   std::vector<Particle>::size_type npar_tot = allparticles.size();
+   double PI=3.14159265358979323846;
      
    // 2d array of complex numbers to store qlm for each particle
    array2d qlm(boost::extents[npar][2 * lval + 1]);
@@ -301,8 +307,8 @@ array2d qlms(const vector<Particle>& particles, const Box& simbox,
    vector<Particle>::size_type i,j;
      
    for (i = 0; i != npar; ++i) {
-      for (j = 0; j != npar; ++j) {
-         if (i != j) {
+      for (j = 0; j != npar_tot; ++j) {
+         if ((i+displs) != j) {
             simbox.sep(particles[i], particles[j], sep);
             if (simbox.isneigh(sep, r2)) {
                // particles i and j are neighbours

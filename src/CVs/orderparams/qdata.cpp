@@ -10,6 +10,8 @@
 #include "conncomponents.h"
 #include "utility.h"
 #include "typedefs.h"
+#include "mpi.h"
+#include "Snapshot.h"
 
 using std::vector;
 using std::complex;
@@ -77,36 +79,96 @@ using std::norm;
 
 // Constructor for QData object.
 
-QData::QData(const ParticleSystem& psystem, const int _lval) : lval(_lval)
+QData::QData(const ParticleSystem& psystem, const SSAGES::Snapshot& snapshot, int _lval) : lval(_lval)
 {
    // store number of neighbours and neighbour list
-   vector<Particle>::size_type npar = psystem.allpars.size();
-   numneigh.resize(npar, 0); // num neighbours for each particle
-   lneigh.resize(npar); // neighbour particle nums for each particle
+   vector<Particle>::size_type Ntot = psystem.allpars.size();
+   vector<Particle>::size_type n = psystem.pars.size();
+   numneigh.resize(n, 0); // num neighbours for each particle
+   lneigh.resize(Ntot); // neighbour particle nums for each particle
+
+   int comm_size ;
+   MPI_Comm_size(snapshot.GetCommunicator(), &comm_size);
+   int recvcounts[comm_size];
+	MPI_Allgather(&n, 1, MPI_INT, &recvcounts, 1, MPI_INT, snapshot.GetCommunicator()); 
+	int displs[comm_size];
+	displs[0]=0;
+	for (int i = 1; i < comm_size; ++i) 
+   {
+		displs[i] = displs[i-1] + recvcounts[i-1];
+	}
 
    // matrix of qlm values
-   qlm.resize(boost::extents[npar][2 * lval + 1]);
-   qlm = qlms(psystem.allpars, psystem.simbox, numneigh, lneigh, lval);
+   qlm.resize(boost::extents[Ntot][2 * lval + 1]);
+   qlm_local.resize(boost::extents[n][2 * lval + 1]);
+   qlm_local = qlms(psystem.pars, psystem.allpars, psystem.simbox, numneigh, lneigh, lval, displs[snapshot.GetCommunicator().rank()]);
+   for (int k = 0; k != 2 * lval + 1; ++k) 
+   {
+	   std::complex< double > temp_qlm[n];
+	   std::complex< double > all_temp_qlm[Ntot];
+	   for (int i=0; i < n; ++i) 
+      {
+		   temp_qlm[i] = qlm_local[i][k]; 
+	   }
+	   MPI_Allgatherv (&temp_qlm, n, MPI_DOUBLE_COMPLEX, &all_temp_qlm, recvcounts, displs, MPI_DOUBLE_COMPLEX, snapshot.GetCommunicator());
+	   for (int i=0; i < Ntot; ++i) 
+      {
+		   qlm[i][k] = all_temp_qlm[i];
+	   }
+   } 
 
    // Lechner dellago eq 6
-   array2d qlmb = qlmbars(qlm, lneigh, lval);
+   array2d qlmb = qlmbars(qlm, lneigh, lval);   // should change!
 
    // get qls and wls
-   ql = qls(qlm);
-   wl = wls(qlm);
+   ql = qls(qlm);  // should change!
+   wl = wls(qlm);  // should change!
    
    // lechner dellago eq 5
-   qlbar = qls(qlmb);
-   wlbar = wls(qlmb);
+   qlbar = qls(qlmb);  // should change!
+   wlbar = wls(qlmb);  // should change!
 
    // compute number of crystalline 'links'
    // first get normalised vectors qlm (-l <= m <= l) for computing
    // dot product Sij
-   array2d qlmt = qlmtildes(qlm, numneigh, lval);
+   array2d qlmt_local = qlmtildes(qlm_local, numneigh, lval); 
+   array2d qlmt(boost::extents[Ntot][2 * lval + 1]);
+   
+   MPI_Barrier(snapshot.GetCommunicator());
 
+   for (int k = 0; k != 2 * lval + 1; ++k) 
+   {
+	   std::complex< double > temp_qlmt[n];
+	   std::complex< double > all_temp_qlmt[Ntot];
+	   for (int i=0; i < n; ++i) 
+      {
+		   temp_qlmt[i] = qlmt_local[i][k]; 
+	   }
+	   MPI_Allgatherv (&temp_qlmt, n, MPI_DOUBLE_COMPLEX, &all_temp_qlmt, recvcounts, displs, MPI_DOUBLE_COMPLEX, snapshot.GetCommunicator());
+	   for (int i=0; i < Ntot; ++i) 
+      {
+		   qlmt[i][k] = all_temp_qlmt[i];
+	   }
+   }
    // do dot products Sij to get number of links
-   numlinks = getnlinks(qlmt, numneigh, lneigh, psystem.nsurf,
-                        psystem.nlinks, psystem.linval, lval);
+   std::vector<int> numlinks_local;
+   numlinks_local = getnlinks(qlmt, qlmt_local, numneigh, lneigh, psystem.nsurf,
+                        psystem.nlinks, psystem.linval, lval, displs[snapshot.GetCommunicator().rank()]);
+   MPI_Barrier(snapshot.GetCommunicator());
+   int temp_numlinks[n];  
+   int temp_numlinks2[Ntot];                   
+   for (int i=0; i < n; ++i) 
+   {
+	   temp_numlinks[i] = numlinks_local[i];
+   }
+    MPI_Gatherv (&temp_numlinks, n, MPI_INT, &temp_numlinks2, recvcounts, displs, MPI_INT, 0, snapshot.GetCommunicator());
+   if (snapshot.GetCommunicator().rank() == 0 )
+   {
+      for (int i=0; i < Ntot; ++i) 
+      {
+	   numlinks[i] = temp_numlinks2[i];
+      }
+   }
 }
 
 // Classify particles as either Liquid-like or crystalline according

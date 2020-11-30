@@ -103,8 +103,10 @@ namespace SSAGES
                 // warning: at the moment the number of links, and the threshold
                 // value for a link is the same for both l=4 and l=6
                 // (psystem.linval and psystem.nlinks respectively)
-                //QData q6data(psystem, 6);
-               // QData q4data(psystem, 4);
+                int lval = 6;
+                QData q6data(ParticleSystem psystem, const SSAGES::Snapshot& snapshot, int lval);
+                lval = 4;
+                QData q4data(ParticleSystem psystem, const SSAGES::Snapshot& snapshot, int lval);
     
                 // from q6data and q4 data, classify each particle as bcc, hcp
                 // etc.  using Lechner Dellago approach.

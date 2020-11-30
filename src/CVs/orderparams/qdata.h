@@ -5,6 +5,7 @@
 #include "particlesystem.h"
 #include "typedefs.h"
 #include "constants.h"
+#include "Snapshot.h"
 
 // QData is a struct to store data used for the Steindhardt bond order
 // parameters. The struct exists since we don't want to recompute
@@ -13,7 +14,7 @@
 struct QData
 {
 public:
-   QData(const ParticleSystem& psystem, int lval);
+   QData(const ParticleSystem& psystem, const SSAGES::Snapshot& snapshot, int lval);
 
    // store the l value, usually either 4 or 6
    int lval;
@@ -28,6 +29,7 @@ public:
 
    // the complete qlm matrix
    array2d qlm;
+   array2d qlm_local;
      
    // ql, \bar{ql}, wl, \bar{wl} for each particle i
    std::vector<double> ql;
