@@ -161,7 +161,7 @@ QData::QData(const ParticleSystem& psystem, const SSAGES::Snapshot& snapshot, in
    {
 	   temp_numlinks[i] = numlinks_local[i];
    }
-    MPI_Gatherv (&temp_numlinks, n, MPI_INT, &temp_numlinks2, recvcounts, displs, MPI_INT, 0, snapshot.GetCommunicator());
+    MPI_Allgatherv (&temp_numlinks, n, MPI_INT, &temp_numlinks2, recvcounts, displs, MPI_INT, 0, snapshot.GetCommunicator());
    if (snapshot.GetCommunicator().rank() == 0 )
    {
       for (int i=0; i < Ntot; ++i) 

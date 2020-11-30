@@ -110,19 +110,19 @@ namespace SSAGES
     
                 // from q6data and q4 data, classify each particle as bcc, hcp
                 // etc.  using Lechner Dellago approach.
-                //vector<LDCLASS> ldclass = classifyparticlesld(psystem, q4data, q6data);
+                vector<LDCLASS> ldclass = classifyparticlesld(psystem, q4data, q6data);
 
                 // from q6 data only, classify each particle as either
                 // crystalline or liquid, using TenWolde Frenkel approach
-               // vector<TFCLASS> tfclass = classifyparticlestf(psystem, q6data);
+                vector<TFCLASS> tfclass = classifyparticlestf(psystem, q6data);
 
                 // indices into particle vector (psystem.allpars) of those
                 // particles in the ten-Wolde Frenkel largest cluster and those
                 // in the Lechner Dellago cluster.
-                //vector<int> tfcnums = largestclustertf(psystem, tfclass);
-                //vector<int> ldcnums = largestclusterld(psystem, ldclass);
+                vector<int> tfcnums = largestclustertf(psystem, tfclass);
+                vector<int> ldcnums = largestclusterld(psystem, ldclass);
 
-                val_ = 1;
+                val_ = tfcnums;
             }
 
             if(snapshot.GetCommunicator().rank() == 0)
