@@ -16,6 +16,7 @@ using std::string;
 
 struct ParticleSystem
 {
+public:
    // constructor: this will set the correct values for all of the
    // variables defined below.
    ParticleSystem(string pfile, const SSAGES::Snapshot& snapshot);

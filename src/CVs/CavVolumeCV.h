@@ -93,31 +93,31 @@ namespace SSAGES
                 MPI_Allreduce(&n, &Ntot, 1, MPI_INT, MPI_SUM, snapshot.GetCommunicator());
 
                 std::string pfile="params.out.start.txt";
-                ParticleSystem psystem(std::string pfile, const SSAGES::Snapshot& snapshot);
+                ParticleSystem psystem(pfile, snapshot);
 
                 // compute the qlm data
                 // warning: at the moment the number of links, and the threshold
                 // value for a link is the same for both l=4 and l=6
                 // (psystem.linval and psystem.nlinks respectively)
                 int lval = 6;
-                QData q6data(ParticleSystem& psystem, const SSAGES::Snapshot& snapshot, const int lval);
+                QData q6data(psystem, snapshot, lval);
                 lval = 4;
-                QData q4data(ParticleSystem& psystem, const SSAGES::Snapshot& snapshot, const int lval);
+                QData q4data(psystem, snapshot, lval);
     
                 // from q6data and q4 data, classify each particle as bcc, hcp
                 // etc.  using Lechner Dellago approach.
                 
-                std::vector<LDCLASS> ldclass = classifyparticlesld(ParticleSystem& psystem, q4data, q6data);
+                std::vector<LDCLASS> ldclass = classifyparticlesld(psystem, q4data, q6data);
 
                 // from q6 data only, classify each particle as either
                 // crystalline or liquid, using TenWolde Frenkel approach
-                std::vector<TFCLASS> tfclass = classifyparticlestf(ParticleSystem psystem, const QData q6data);
+                std::vector<TFCLASS> tfclass = classifyparticlestf(psystem, q6data);
 
                 // indices into particle vector (psystem.allpars) of those
                 // particles in the ten-Wolde Frenkel largest cluster and those
                 // in the Lechner Dellago cluster.
-                std::vector<int> tfcnums = largestclustertf(ParticleSystem psystem, std::vector<TFCLASS> tfclass);
-                std::vector<int> ldcnums = largestclusterld(ParticleSystem psystem, std::vector<LDCLASS> ldclass);
+                std::vector<int> tfcnums = largestclustertf(psystem, tfclass);
+                std::vector<int> ldcnums = largestclusterld(psystem, ldclass);
 
                 int size_TF = csizetf(tfcnums);
                 val_ = size_TF;

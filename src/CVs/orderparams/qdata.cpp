@@ -12,6 +12,7 @@
 #include "typedefs.h"
 #include "mpi.h"
 #include "Snapshot.h"
+#include "particlesystem.h"
 
 using std::vector;
 using std::complex;
