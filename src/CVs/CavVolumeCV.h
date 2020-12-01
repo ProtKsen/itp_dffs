@@ -41,7 +41,6 @@
 #include <map>
 #include <math.h>
 #include <complex>
-#include "constants.h"
 #include <boost/graph/connected_components.hpp>
 #include "boost/multi_array.hpp"
 #include <omp.h>
@@ -49,9 +48,6 @@
 #include <stdlib.h>
 #include <algorithm>
 
-using std::cout;
-using std::endl;
-using std::string;
 
 namespace SSAGES
 {
@@ -104,25 +100,27 @@ namespace SSAGES
                 // value for a link is the same for both l=4 and l=6
                 // (psystem.linval and psystem.nlinks respectively)
                 int lval = 6;
-                QData q6data(ParticleSystem psystem, const SSAGES::Snapshot& snapshot, int lval);
+                QData q6data(ParticleSystem& psystem, const SSAGES::Snapshot& snapshot, const int lval);
                 lval = 4;
-                QData q4data(ParticleSystem psystem, const SSAGES::Snapshot& snapshot, int lval);
+                QData q4data(ParticleSystem& psystem, const SSAGES::Snapshot& snapshot, const int lval);
     
                 // from q6data and q4 data, classify each particle as bcc, hcp
                 // etc.  using Lechner Dellago approach.
-                vector<LDCLASS> ldclass = classifyparticlesld(psystem, q4data, q6data);
+                
+                std::vector<LDCLASS> ldclass = classifyparticlesld(ParticleSystem& psystem, q4data, q6data);
 
                 // from q6 data only, classify each particle as either
                 // crystalline or liquid, using TenWolde Frenkel approach
-                vector<TFCLASS> tfclass = classifyparticlestf(psystem, q6data);
+                std::vector<TFCLASS> tfclass = classifyparticlestf(ParticleSystem psystem, const QData q6data);
 
                 // indices into particle vector (psystem.allpars) of those
                 // particles in the ten-Wolde Frenkel largest cluster and those
                 // in the Lechner Dellago cluster.
-                vector<int> tfcnums = largestclustertf(psystem, tfclass);
-                vector<int> ldcnums = largestclusterld(psystem, ldclass);
+                std::vector<int> tfcnums = largestclustertf(ParticleSystem psystem, std::vector<TFCLASS> tfclass);
+                std::vector<int> ldcnums = largestclusterld(ParticleSystem psystem, std::vector<LDCLASS> ldclass);
 
-                val_ = tfcnums;
+                int size_TF = csizetf(tfcnums);
+                val_ = size_TF;
             }
 
             if(snapshot.GetCommunicator().rank() == 0)
