@@ -27,11 +27,11 @@ namespace SSAGES
      * 
      * \ingroup CVs
      */
-    class CavVolumeCV : public CollectiveVariable
+    class CrystVolumeLDCV : public CollectiveVariable
     {
     public:
         //! Constructor
-        CavVolumeCV()
+        CrystVolumeLDCV()
         {}
 
         //! Initialize the CV.
@@ -78,18 +78,13 @@ namespace SSAGES
                 
                 std::vector<LDCLASS> ldclass = classifyparticlesld(psystem, q4data, q6data);
 
-                // from q6 data only, classify each particle as either
-                // crystalline or liquid, using TenWolde Frenkel approach
-                std::vector<TFCLASS> tfclass = classifyparticlestf(psystem, q6data);
-
                 // indices into particle vector (psystem.allpars) of those
                 // particles in the ten-Wolde Frenkel largest cluster and those
                 // in the Lechner Dellago cluster.
-                std::vector<int> tfcnums = largestclustertf(psystem, tfclass);
                 std::vector<int> ldcnums = largestclusterld(psystem, ldclass);
 
-                int size_TF = csizetf(tfcnums);
-                val_ = size_TF;
+                int size_LD = csizeld(ldcnums);
+                val_ = size_LD;
 
                 MPI_Barrier(snapshot.GetCommunicator());
      
@@ -112,15 +107,15 @@ namespace SSAGES
         }
 
         //! \copydoc CollectiveVariable::BuildCV()
-        static CavVolumeCV* Build(const Json::Value& json, const std::string& path)
+        static CrystVolumeLDCV* Build(const Json::Value& json, const std::string& path)
 		{
 			Json::ObjectRequirement validator;
 			Json::Value schema;
 			Json::CharReaderBuilder rbuilder;
 			Json::CharReader* reader = rbuilder.newCharReader();
 
-			reader->parse(JsonSchema::CavVolumeCV.c_str(),
-			              JsonSchema::CavVolumeCV.c_str() + JsonSchema::CavVolumeCV.size(),
+			reader->parse(JsonSchema::CrystVolumeLDCV.c_str(),
+			              JsonSchema::CrystVolumeLDCV.c_str() + JsonSchema::CrystVolumeLDCV.size(),
 			              &schema, nullptr);
 			validator.Parse(schema, path);
 
@@ -129,7 +124,7 @@ namespace SSAGES
 			if(validator.HasErrors())
 				throw BuildException(validator.GetErrors());
 
-			return new CavVolumeCV();
+			return new CrystVolumeLDCV();
 		}
     };
 }

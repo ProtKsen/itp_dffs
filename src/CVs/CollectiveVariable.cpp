@@ -36,14 +36,10 @@
 #include "TorsionalCV.h"
 #include "RMSDCV.h"
 #include "CavVolumeCV.h"
+#include "CrystVolumeLDCV.h"
+#include "CrystVolumeTFCV.h"
 #include "json/json.h"
 #include <stdexcept>
-#include "orderparams/particlesystem.h"
-#include "orderparams/orderparameters.h"
-#include "orderparams/qdata.h"
-#include "orderparams/constants.h"
-#include "orderparams/utility.h"
-#include "orderparams/gtensor.h"
 
 
 namespace SSAGES
@@ -83,6 +79,10 @@ namespace SSAGES
 			return RMSDCV::Build(json, path);
 		else if (type == "CavVolume")
 			return CavVolumeCV::Build(json, path);
+		else if (type == "CrystVolumeLD")
+			return CrystVolumeLDCV::Build(json, path);
+		else if (type == "CrystVolumeTF")
+			return CrystVolumeTFCV::Build(json, path);
 		else
 			throw std::invalid_argument(path + ": Unknown CV type specified.");
 	}

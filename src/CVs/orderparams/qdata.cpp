@@ -124,17 +124,17 @@ QData::QData(const ParticleSystem& psystem, const SSAGES::Snapshot& snapshot, in
    // get qls and wls
    ql = qls(qlm);  // should change!
    wl = wls(qlm);  // should change!
-   
+
    // lechner dellago eq 5
    qlbar = qls(qlmb);  // should change!
    wlbar = wls(qlmb);  // should change!
 
-   // compute number of crystalline 'links'
-   // first get normalised vectors qlm (-l <= m <= l) for computing
-   // dot product Sij
+  // compute number of crystalline 'links'
+  // first get normalised vectors qlm (-l <= m <= l) for computing
+  // dot product Sij
    array2d qlmt_local = qlmtildes(qlm_local, numneigh, lval); 
    array2d qlmt(boost::extents[Ntot][2 * lval + 1]);
-   
+  // 
    MPI_Barrier(snapshot.GetCommunicator());
 
    for (int k = 0; k != 2 * lval + 1; ++k) 
@@ -153,22 +153,22 @@ QData::QData(const ParticleSystem& psystem, const SSAGES::Snapshot& snapshot, in
    }
    // do dot products Sij to get number of links
    std::vector<int> numlinks_local;
+   numlinks.resize(Ntot);
+
    numlinks_local = getnlinks(qlmt, qlmt_local, numneigh, lneigh, psystem.nsurf,
                         psystem.nlinks, psystem.linval, lval, displs[snapshot.GetCommunicator().rank()]);
    MPI_Barrier(snapshot.GetCommunicator());
    int temp_numlinks[n];  
-   int temp_numlinks2[Ntot];                   
+   int all_temp_numlinks[Ntot];                   
    for (int i=0; i < n; ++i) 
    {
 	   temp_numlinks[i] = numlinks_local[i];
    }
-    MPI_Gatherv (&temp_numlinks, n, MPI_INT, &temp_numlinks2, recvcounts, displs, MPI_INT, 0, snapshot.GetCommunicator());
-   if (snapshot.GetCommunicator().rank() == 0 )
+   MPI_Allgatherv (&temp_numlinks, n, MPI_INT, &all_temp_numlinks, recvcounts, displs, MPI_INT, snapshot.GetCommunicator());
+   
+   for (int i=0; i < Ntot; ++i) 
    {
-      for (int i=0; i < Ntot; ++i) 
-      {
-	   numlinks[i] = temp_numlinks2[i];
-      }
+      numlinks[i] = all_temp_numlinks[i];
    }
 }
 

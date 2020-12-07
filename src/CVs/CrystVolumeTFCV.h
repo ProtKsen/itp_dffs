@@ -27,11 +27,11 @@ namespace SSAGES
      * 
      * \ingroup CVs
      */
-    class CavVolumeCV : public CollectiveVariable
+    class CrystVolumeTFCV : public CollectiveVariable
     {
     public:
         //! Constructor
-        CavVolumeCV()
+        CrystVolumeTFCV()
         {}
 
         //! Initialize the CV.
@@ -65,28 +65,17 @@ namespace SSAGES
                 ParticleSystem psystem(pfile, snapshot);
 
                 // compute the qlm data
-                // warning: at the moment the number of links, and the threshold
-                // value for a link is the same for both l=4 and l=6
-                // (psystem.linval and psystem.nlinks respectively)
+                
                 int lval = 6;
                 QData q6data(psystem, snapshot, lval);
-                lval = 4;
-                QData q4data(psystem, snapshot, lval);
     
-                // from q6data and q4 data, classify each particle as bcc, hcp
-                // etc.  using Lechner Dellago approach.
-                
-                std::vector<LDCLASS> ldclass = classifyparticlesld(psystem, q4data, q6data);
-
                 // from q6 data only, classify each particle as either
                 // crystalline or liquid, using TenWolde Frenkel approach
                 std::vector<TFCLASS> tfclass = classifyparticlestf(psystem, q6data);
 
                 // indices into particle vector (psystem.allpars) of those
-                // particles in the ten-Wolde Frenkel largest cluster and those
-                // in the Lechner Dellago cluster.
+                // particles in the ten-Wolde Frenkel largest cluster.
                 std::vector<int> tfcnums = largestclustertf(psystem, tfclass);
-                std::vector<int> ldcnums = largestclusterld(psystem, ldclass);
 
                 int size_TF = csizetf(tfcnums);
                 val_ = size_TF;
@@ -112,15 +101,15 @@ namespace SSAGES
         }
 
         //! \copydoc CollectiveVariable::BuildCV()
-        static CavVolumeCV* Build(const Json::Value& json, const std::string& path)
+        static CrystVolumeTFCV* Build(const Json::Value& json, const std::string& path)
 		{
 			Json::ObjectRequirement validator;
 			Json::Value schema;
 			Json::CharReaderBuilder rbuilder;
 			Json::CharReader* reader = rbuilder.newCharReader();
 
-			reader->parse(JsonSchema::CavVolumeCV.c_str(),
-			              JsonSchema::CavVolumeCV.c_str() + JsonSchema::CavVolumeCV.size(),
+			reader->parse(JsonSchema::CrystVolumeTFCV.c_str(),
+			              JsonSchema::CrystVolumeTFCV.c_str() + JsonSchema::CrystVolumeTFCV.size(),
 			              &schema, nullptr);
 			validator.Parse(schema, path);
 
@@ -129,7 +118,7 @@ namespace SSAGES
 			if(validator.HasErrors())
 				throw BuildException(validator.GetErrors());
 
-			return new CavVolumeCV();
+			return new CrystVolumeTFCV();
 		}
     };
 }
