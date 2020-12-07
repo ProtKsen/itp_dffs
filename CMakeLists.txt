@@ -58,7 +58,7 @@ set(SOURCE
     src/CVs/orderparams/conncomponents.cpp
     src/CVs/orderparams/diagonalize.cpp
     src/CVs/orderparams/gtensor.cpp
-    src/CVs/orderparams/ldtool.cpp
+ #   src/CVs/orderparams/ldtool.cpp
     src/CVs/orderparams/opfunctions.cpp
     src/CVs/orderparams/orderparameters.cpp
     src/CVs/orderparams/qdata.cpp
