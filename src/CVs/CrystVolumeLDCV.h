@@ -92,11 +92,11 @@ namespace SSAGES
                if (snapshot.GetCommunicator().rank() == 0)
                {
 		           auto dumpfilename = snapshot.GetIteration(); 
-                   std::system("mkdir -p NTFs");
-                   std::string FileNTF="NTFs/NTF_"+std::to_string(snapshot.GetWalkerID())+".txt";
-                   std::ofstream fout_NTF(FileNTF,std::ios_base::out | std::ios_base::app);  
-                   fout_NTF << dumpfilename <<" "<< val_ << std::endl;
-                   fout_NTF.close(); 
+                   std::system("mkdir -p NLDs");
+                   std::string FileNLD="NLDs/NLD_"+std::to_string(snapshot.GetWalkerID())+".txt";
+                   std::ofstream fout_NLD(FileNLD,std::ios_base::out | std::ios_base::app);  
+                   fout_NLD << dumpfilename <<" "<< val_ << std::endl;
+                   fout_NLD.close(); 
 		       }           
 
 	            MPI_Barrier(snapshot.GetCommunicator());
