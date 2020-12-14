@@ -266,9 +266,9 @@ array2d qlmtildes(const array2d& qlm, const vector<int>& numneigh,
 // Dellago JCP 134, 104501 (2011) Equation (5)
 
 array2d qlmbars(const array2d& qlm, const vector<vector<int> >& lneigh,
-                const int lval)
+                const int lval, const int npar)
 {
-   int npar = qlm.shape()[0];
+   //int npar = qlm.shape()[0];
    array2d qlmbar(boost::extents[npar][2 * lval + 1]);     
 
    for (int i = 0; i != npar; ++i) {
@@ -295,7 +295,6 @@ array2d qlms(const std::vector<Particle>& particles,
 {
    vector<Particle>::size_type npar = particles.size();
    std::vector<Particle>::size_type npar_tot = allparticles.size();
-   double PI=3.14159265358979323846;
      
    // 2d array of complex numbers to store qlm for each particle
    array2d qlm(boost::extents[npar][2 * lval + 1]);
@@ -308,8 +307,8 @@ array2d qlms(const std::vector<Particle>& particles,
      
    for (i = 0; i != npar; ++i) {
       for (j = 0; j != npar_tot; ++j) {
-         if ((i+displs) != j) {
-            simbox.sep(particles[i], particles[j], sep);
+         simbox.sep(particles[i], allparticles[j], sep);
+         if ((sep[0] != 0) || (sep[1] != 0) || (sep[2] != 0)) {
             if (simbox.isneigh(sep, r2)) {
                // particles i and j are neighbours
                ++numneigh[i];

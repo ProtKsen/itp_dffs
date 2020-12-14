@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <complex>
 #include "boost/multi_array.hpp"
@@ -86,9 +87,9 @@ QData::QData(const ParticleSystem& psystem, const SSAGES::Snapshot& snapshot, in
    vector<Particle>::size_type Ntot = psystem.allpars.size();
    vector<Particle>::size_type n = psystem.pars.size();
    numneigh.resize(n, 0); // num neighbours for each particle
-   lneigh.resize(Ntot); // neighbour particle nums for each particle
+   lneigh.resize(n); // neighbour particle nums for each particle
 
-   int comm_size ;
+   int comm_size;
    MPI_Comm_size(snapshot.GetCommunicator(), &comm_size);
    int recvcounts[comm_size];
 	MPI_Allgather(&n, 1, MPI_INT, &recvcounts, 1, MPI_INT, snapshot.GetCommunicator()); 
@@ -103,6 +104,8 @@ QData::QData(const ParticleSystem& psystem, const SSAGES::Snapshot& snapshot, in
    qlm.resize(boost::extents[Ntot][2 * lval + 1]);
    qlm_local.resize(boost::extents[n][2 * lval + 1]);
    qlm_local = qlms(psystem.pars, psystem.allpars, psystem.simbox, numneigh, lneigh, lval, displs[snapshot.GetCommunicator().rank()]);
+   
+
    for (int k = 0; k != 2 * lval + 1; ++k) 
    {
 	   std::complex< double > temp_qlm[n];
@@ -117,17 +120,18 @@ QData::QData(const ParticleSystem& psystem, const SSAGES::Snapshot& snapshot, in
 		   qlm[i][k] = all_temp_qlm[i];
 	   }
    } 
+   
 
    // Lechner dellago eq 6
-   array2d qlmb = qlmbars(qlm, lneigh, lval);   // should change!
+   array2d qlmb = qlmbars(qlm, lneigh, lval, n);   // qlmb_local[n]
 
    // get qls and wls
-   ql = qls(qlm);  // should change!
-   wl = wls(qlm);  // should change!
+   ql = qls(qlm);  // should change!  ql[Ntot]
+   wl = wls(qlm);  // should change!   wl[Ntot]
 
    // lechner dellago eq 5
-   qlbar = qls(qlmb);  // should change!
-   wlbar = wls(qlmb);  // should change!
+   qlbar = qls(qlmb);  // should change! qls[n]
+   wlbar = wls(qlmb);  // should change!  qls[n]
 
   // compute number of crystalline 'links'
   // first get normalised vectors qlm (-l <= m <= l) for computing
@@ -208,7 +212,7 @@ vector<LDCLASS> classifyparticlesld(const ParticleSystem& psystem, const QData& 
          parclass[i] = SURFACE;
       }
       else {
-         if (q6data.qlbar[i] < 0.32) {
+         if (q6data.qlbar[i] < 0.3) {
             parclass[i] = LIQUID;
          }
          else { // particle is solid
