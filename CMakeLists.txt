@@ -64,6 +64,9 @@ set(SOURCE
     src/CVs/orderparams/qdata.cpp
     src/CVs/orderparams/qlmfunctions.cpp
     src/CVs/orderparams/readwrite.cpp
+    src/CVs/orderparams/lattice.cpp
+    src/CVs/orderparams/getneigh.cpp
+    src/CVs/orderparams/neighdata.cpp
     src/Loggers/Logger.cpp
     src/Validator/RequirementLoader.cpp
     src/JSON/jsoncpp.cpp

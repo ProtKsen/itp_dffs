@@ -1,4 +1,4 @@
-/*
+./*
 * calculate cavity volume by density analysis, suitable for any condensed phase
 */
 
@@ -15,6 +15,12 @@
 #include <string>
 #include "orderparams/particlesystem.h"
 #include "orderparams/orderparameters.h"
+#include "orderparams/qdata.h"
+#include "orderparams/constants.h"
+#include "orderparams/utility.h"
+#include "orderparams/gtensor.h"
+#include "orderparams/readwrite.h"  // readparams
+#include "orderparams/box.h" // Box
 #include "orderparams/lattice.h" 
 #include "orderparams/neighdata.h"
 
@@ -54,11 +60,22 @@ namespace SSAGES
             MPI_Comm_rank(MPI_COMM_WORLD, &world_rank); 
             auto timestep = snapshot.GetIteration();
 
-            /* for testing
+            // for testing
             std::string FileTest="Test_"+std::to_string(snapshot.GetWalkerID())+
                                         "_" + std::to_string(snapshot.GetCommunicator().rank()) +".txt";
-            std::ofstream fout_test(FileTest, std::ios_base::out | std::ios_base::app);
+            /*std::string FileTest_pos_local="pos_local_"+ std::to_string(timestep)+
+                                        "_" + std::to_string(snapshot.GetWalkerID())+
+                                        "_" + std::to_string(snapshot.GetCommunicator().rank()) + ".txt";
+             std::string FileTest_pos_global="pos_global_"+ std::to_string(timestep)+
+                                        "_" + std::to_string(snapshot.GetWalkerID())+
+                                        "_" + std::to_string(snapshot.GetCommunicator().rank()) + ".txt";
             */
+            std::ofstream fout_test(FileTest, std::ios_base::out | std::ios_base::app);
+            /*std::ofstream fout_pos_local(FileTest_pos_local, std::ios_base::out | std::ios_base::app);
+            std::ofstream fout_pos_global(FileTest_pos_global, std::ios_base::out | std::ios_base::app);  
+            fout_pos_local.precision(10);
+            fout_pos_global.precision(10); */
+            
 
             if (timestep % 1 == 0)  // 1 - check lambda on every step
             {
@@ -70,8 +87,47 @@ namespace SSAGES
                 MPI_Allreduce(&n, &Ntot, 1, MPI_INT, MPI_SUM, snapshot.GetCommunicator());
                 std::string pfile="params.out.start.txt";
                 ParticleSystem psystem(pfile, snapshot);
+
+
+                // compute the qlm data                
+                int lval = 6;
+                QData q6data(psystem, snapshot, lval);
+                
+                /*for  (int i = 0; i < Ntot; ++i) 
+                {
+                    fout_test << timestep << " numlinks " << psystem.allpars[i].pos[0] << " " <<
+                    psystem.allpars[i].pos[1] << " " << psystem.allpars[i].pos[2] << " " <<
+                    q6data.qlm[i][0] << " " << q6data.numlinks[i] << std::endl;
+                }               
+                fout_test.close();
+                
+
+                auto HMatrix = snapshot.GetHMatrix();
+                fout_pos_global << Ntot << std::endl;
+                fout_pos_global << HMatrix(0,0) << " " << HMatrix(1,1) << " " << HMatrix(2,2) << " " << std::endl;
+                for  (int i = 0; i < Ntot; ++i) 
+                {
+                    fout_pos_global << "N " << psystem.allpars[i].pos[0] << " " <<
+                    psystem.allpars[i].pos[1] << " " << psystem.allpars[i].pos[2] << std::endl;
+                }               
+                fout_pos_global.close();
+
+                fout_pos_local << Ntot << std::endl;
+                fout_pos_local << " " << std::endl;
+                for  (int i = 0; i < n; ++i) 
+                {
+                    fout_pos_local << i << " " << psystem.allpars[i].pos[0] << " " <<
+                    psystem.allpars[i].pos[1] << " " << psystem.allpars[i].pos[2] << std::endl;
+                }               
+                fout_pos_local.close();
+                */
+    
+                // from q6 data only, classify each particle as either
+                // crystalline or liquid, using TenWolde Frenkel approach
+                std::vector<TFCLASS> tfclass = classifyparticlestf(psystem, q6data);
+
                 Lattice lattice(pfile, snapshot);
-                NeighData neighdata(psystem, lattice, snapshot);
+                NeighData neighdata(psystem, lattice, tfclass, snapshot);
                 std::vector<VCCLASS> vcclass = classifynodes(lattice, neighdata);
                 std::vector<int> cnums = largestnodescluster(lattice, vcclass);
 
@@ -85,16 +141,15 @@ namespace SSAGES
                             in_clust = 1;
                         }
                     }
-                    /*fout_test << i << " " << lattice.allnodes[i].pos[0] << " " << 
+                    fout_test << i << " " << lattice.allnodes[i].pos[0] << " " << 
                                 lattice.allnodes[i].pos[1] << " " << 
                                 lattice.allnodes[i].pos[2] << " " <<
                                 neighdata.numneigh[i] << " " <<
                                 vcclass[i] << " " << in_clust << std::endl;
-                    */
                 }               
-                //fout_test.close();
+                fout_test.close();
 
-                val_ = cnums.size()* lattice.lcellx * lattice.lcelly * lattice.lcellz;
+                val_ = cnums.size(); //* lattice.lcellx * lattice.lcelly * lattice.lcellz;
 
                 MPI_Barrier(snapshot.GetCommunicator());
      

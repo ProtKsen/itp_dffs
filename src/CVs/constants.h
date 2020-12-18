@@ -16,6 +16,8 @@ enum LDCLASS {FCC, HCP, BCC, LIQUID, ICOS, SURFACE};
 
 enum TFCLASS {LIQ, XTAL, SURF};
 
+enum VCCLASS {VAP, CRYST};   // for CavVolume
+
 // Wigner symbols (l  l  l )
 //                (m1 m2 m3) 
 // for l = 4 and 6, and integers m1 m2 m3
