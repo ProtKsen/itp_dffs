@@ -2,6 +2,7 @@
 #include <string>
 #include <cstdlib>
 #include <iostream>
+#include <fstream>
 #include "lattice.h"
 #include "readwrite.h"
 #include "box.h"
@@ -27,8 +28,13 @@ Lattice::Lattice(string pfile, const SSAGES::Snapshot& snapshot)
    MPI_Comm_size(snapshot.GetCommunicator(), &comm_size);
    int comm_rank;
    MPI_Comm_rank(snapshot.GetCommunicator(), &comm_rank);
+   int world_size;
+   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+   int world_rank;
+   MPI_Comm_size(MPI_COMM_WORLD, &world_rank);
 
    // parameters
+
    std::map<std::string, std::string> params = readparams(pfile);
    nsep = atof(params["lattsep"].c_str());
    numcells_1d = atoi(params["lattsize"].c_str());
@@ -36,7 +42,7 @@ Lattice::Lattice(string pfile, const SSAGES::Snapshot& snapshot)
    map<string, bool> bmap;
    bmap["True"] = true;
    bmap["False"] = false;	 
-   bool zperiodic = bmap[params["zperiodic"]];
+   zperiodic = bmap[params["zperiodic"]];
    int numcells = pow(numcells_1d, 3);
 
    auto HMatrix = snapshot.GetHMatrix();
@@ -72,7 +78,7 @@ Lattice::Lattice(string pfile, const SSAGES::Snapshot& snapshot)
 
    int leftj = comm_rank * floor(numcells_1d / comm_size);
    int rightj = (comm_rank + 1) * floor(numcells_1d / comm_size);
-   if ((numcells_1d - rightj) < (rightj - leftj)) 
+   if (comm_rank == comm_size - 1) 
    {
       rightj = numcells_1d;
    }

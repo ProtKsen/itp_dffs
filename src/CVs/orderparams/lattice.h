@@ -22,8 +22,6 @@ public:
    // particle positions
    vector<Node> nodes;
    vector<Node> allnodes;
-   // simulation box
-   Box simbox;
    // num crystalline neighbours for particle to be in crystalline environment
    unsigned int ncrneigh;
    // the number of nodes in one dimension

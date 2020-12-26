@@ -52,12 +52,13 @@ vector<int> getneigh(const Lattice& lattice, const vector<Particle>& allpars, co
    int n = lattice.nodes.size(); // the number of nodes in proc
    int Ntot = allpars.size(); // number of all particles
    std::vector<int> numneigh;
-   numneigh.resize(n);
+   numneigh.resize(n, 0);
 
    double s[3];
    // compute separation between particles (store in s)
    for (int i = 0; i < n; ++i)
    {
+      numneigh[i] = 0;
       for (int j = 0; j < Ntot; ++j)
       {
          sepnp(lattice.nodes[i], allpars[j], lattice.lboxx, 

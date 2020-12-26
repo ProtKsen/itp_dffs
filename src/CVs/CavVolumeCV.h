@@ -54,13 +54,13 @@ namespace SSAGES
             MPI_Comm_rank(MPI_COMM_WORLD, &world_rank); 
             auto timestep = snapshot.GetIteration();
 
-            /* for testing
-            std::string FileTest="Test_"+std::to_string(snapshot.GetWalkerID())+
-                                        "_" + std::to_string(snapshot.GetCommunicator().rank()) +".txt";
-            std::ofstream fout_test(FileTest, std::ios_base::out | std::ios_base::app);
-            */
-
-            if (timestep % 1 == 0)  // 1 - check lambda on every step
+             //for testing
+            //std::string FileTest="Test_lattice_"+std::to_string(snapshot.GetWalkerID())+
+            //                            "_" + std::to_string(snapshot.GetCommunicator().rank()) +".txt";
+            //std::ofstream fout_test(FileTest, std::ios_base::out | std::ios_base::app); 
+            
+            val_ = 0;
+            if (timestep > 0)  // 1 - check lambda on every step
             {
                 auto n = snapshot.GetNumAtoms();
 			    std::fill(grad_.begin(), grad_.end(), Vector3{0,0,0});
@@ -75,29 +75,27 @@ namespace SSAGES
                 std::vector<VCCLASS> vcclass = classifynodes(lattice, neighdata);
                 std::vector<int> cnums = largestnodescluster(lattice, vcclass);
 
-                for  (int i = 0; i < lattice.allnodes.size(); ++i) 
-                {
-                    int in_clust = 0;
-                    for (int j = 0; j < cnums.size(); ++j)
-                    {                        
-                        if (i == cnums[j])
-                        {
-                            in_clust = 1;
-                        }
-                    }
-                    /*fout_test << i << " " << lattice.allnodes[i].pos[0] << " " << 
-                                lattice.allnodes[i].pos[1] << " " << 
-                                lattice.allnodes[i].pos[2] << " " <<
-                                neighdata.numneigh[i] << " " <<
-                                vcclass[i] << " " << in_clust << std::endl;
-                    */
-                }               
+                //fout_test << "lattice" << std::endl;
+                //for  (int i = 0; i < lattice.allnodes.size(); ++i) 
+                //{
+                //    int in_clust = 0;
+                //    for (int j = 0; j < cnums.size(); ++j)
+                //    {                        
+                //        if (i == cnums[j])
+                //        {
+                //            in_clust = 1;
+                //        }
+                //    }
+                //    fout_test << i << " " << lattice.allnodes[i].pos[0] << " " << 
+                //                lattice.allnodes[i].pos[1] << " " << 
+                //                lattice.allnodes[i].pos[2] << " " <<
+                //                neighdata.numneigh[i] << " " << 
+                //                vcclass[i] << " " << in_clust << std::endl;                    
+                //}               
                 //fout_test.close();
 
-                val_ = cnums.size()* lattice.lcellx * lattice.lcelly * lattice.lcellz;
+                val_ = cnums.size() * lattice.lcellx * lattice.lcelly * lattice.lcellz;
 
-                MPI_Barrier(snapshot.GetCommunicator());
-     
                 // write results
                if (snapshot.GetCommunicator().rank() == 0)
                {
@@ -105,7 +103,8 @@ namespace SSAGES
                    std::system("mkdir -p CVs");
                    std::string FileCV="CVs/CV_"+std::to_string(snapshot.GetWalkerID())+".txt";
                    std::ofstream fout_CV(FileCV,std::ios_base::out | std::ios_base::app);  
-                   fout_CV << dumpfilename <<" "<< val_ << std::endl;
+                   fout_CV << snapshot.GetCommunicator().rank() << " " << dumpfilename << 
+                   " "<< val_ << std::endl;
                    fout_CV.close(); 
 		       }           
 

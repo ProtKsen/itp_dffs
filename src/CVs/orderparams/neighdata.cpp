@@ -28,12 +28,10 @@ using std::norm;
 NeighData::NeighData(const ParticleSystem& psystem, const Lattice& lattice, const SSAGES::Snapshot& snapshot)
 {
    // store number of neighbours and neighbour list
-   int Ntot = psystem.allpars.size();
-   int n = psystem.pars.size();
-   numneigh_local.resize(n); // num neighbours for each node in proc
-   numneigh.resize(Ntot); // num neighbours for each node in proc
-   //lneigh_local.resize(n); // neighbour particle nums for each node
-   //lneigh.resize(Ntot); // neighbour particle nums for each node
+   int Ntot = lattice.allnodes.size();
+   int n = lattice.nodes.size();
+   numneigh_local.resize(n, 0); // num neighbours for each node in proc
+   numneigh.resize(Ntot, 0); // num neighbours for each node in proc
 
    int comm_size;
    MPI_Comm_size(snapshot.GetCommunicator(), &comm_size);
@@ -49,7 +47,6 @@ NeighData::NeighData(const ParticleSystem& psystem, const Lattice& lattice, cons
    numneigh_local = getneigh(lattice, psystem.allpars, lattice.nsep);
 
    MPI_Barrier(snapshot.GetCommunicator());
-
    
 	int temp_numneigh_local[n];
 	int temp_numneigh[Ntot];
@@ -62,7 +59,6 @@ NeighData::NeighData(const ParticleSystem& psystem, const Lattice& lattice, cons
    {
 	   numneigh[i] = temp_numneigh[i];
 	}
-      
 }
 
 
@@ -71,7 +67,7 @@ vector<VCCLASS> classifynodes(const Lattice& lattice, const NeighData& neighdata
    int n = lattice.allnodes.size();
    vector<VCCLASS> nodeclass(n, VAP);
 
-   for (int i = 0; i  < n; ++i)
+   for (int i = 0; i < n; ++i)
    {
       if (neighdata.numneigh[i] >= lattice.ncrneigh)
       {
@@ -121,7 +117,7 @@ bool isnodesneigh(const Node& n1, const Node& n2, const Lattice& lattice, double
    double s[3];
 
    // compute separation between nodes (store in s)
-   sepnodes(n1,n2, lattice.lboxx, lattice.lboxy, lattice.lboxz, lattice.zperiodic, s);
+   sepnodes(n1, n2, lattice.lboxx, lattice.lboxy, lattice.lboxz, lattice.zperiodic, s);
 
    if ((std::abs(s[0]) < lattice.lcellx * 2) && (std::abs(s[1]) < lattice.lcelly * 2)
        && (std::abs(s[2]) < lattice.lcellz * 2)) {
@@ -150,21 +146,21 @@ graph getnodegraph(const Lattice& lattice,
          }
       }
    }
-
    return G;
 }
 
 
 vector<int> largestnodescluster(const Lattice& lattice, const vector<VCCLASS>& vcclass)
 {
-   // get vector with indices that are all vapor particles
+   // get vector with indices that are all vapor nodes
+
    vector<int> xps;
    for (int i = 0; i < lattice.allnodes.size(); ++i) {
       if (vcclass[i] == VAP) {
          xps.push_back(i);
       }
    }
-
+   
    // graph of xtal particles, with each particle a vertex and each
    // link an edge
    graph xgraph = getnodegraph(lattice, xps);
