@@ -22,7 +22,7 @@ public:
 };
 
 std::vector<VCCLASS> classifynodes(const Lattice&, const NeighData&);
-std::vector<int> largestnodescluster(const Lattice&, const vector<VCCLASS>&t);
+std::vector<int> largestnodescluster(const Lattice&, const vector<VCCLASS>&);
 graph getnodegraph(const Lattice&, const vector<int>&);
 bool isnodesneigh(const Node&, const Node&, const Lattice&, double&);
 inline void sepnodes(const Node&, const Node&, const int, 

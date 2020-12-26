@@ -2,7 +2,6 @@
 #include <string>
 #include <cstdlib>
 #include <iostream>
-#include <fstream>
 #include "lattice.h"
 #include "readwrite.h"
 #include "box.h"
@@ -28,10 +27,6 @@ Lattice::Lattice(string pfile, const SSAGES::Snapshot& snapshot)
    MPI_Comm_size(snapshot.GetCommunicator(), &comm_size);
    int comm_rank;
    MPI_Comm_rank(snapshot.GetCommunicator(), &comm_rank);
-   int world_size;
-   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-   int world_rank;
-   MPI_Comm_size(MPI_COMM_WORLD, &world_rank);
 
    // parameters
 
