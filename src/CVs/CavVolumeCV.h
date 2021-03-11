@@ -17,6 +17,8 @@
 #include "orderparams/orderparameters.h"
 #include "orderparams/lattice.h" 
 #include "orderparams/neighdata.h"
+#include <stdio.h> 
+#include <time.h> 
 
 
 namespace SSAGES
@@ -54,13 +56,13 @@ namespace SSAGES
             MPI_Comm_rank(MPI_COMM_WORLD, &world_rank); 
             auto timestep = snapshot.GetIteration();
 
-             //for testing
+            //for testing
             //std::string FileTest="Test_lattice_"+std::to_string(snapshot.GetWalkerID())+
             //                            "_" + std::to_string(snapshot.GetCommunicator().rank()) +".txt";
             //std::ofstream fout_test(FileTest, std::ios_base::out | std::ios_base::app); 
             
             val_ = 0;
-            if (timestep > 0)  // 1 - check lambda on every step
+            if ((timestep > 1) && (timestep % 1 == 0))  // 1 - check lambda on every step
             {
                 auto n = snapshot.GetNumAtoms();
 			    std::fill(grad_.begin(), grad_.end(), Vector3{0,0,0});
@@ -92,7 +94,6 @@ namespace SSAGES
                 //                neighdata.numneigh[i] << " " << 
                 //                vcclass[i] << " " << in_clust << std::endl;                    
                 //}               
-                //fout_test.close();
 
                 val_ = cnums.size() * lattice.lcellx * lattice.lcelly * lattice.lcellz;
 
@@ -108,7 +109,7 @@ namespace SSAGES
                    fout_CV.close(); 
 		       }           
 
-	            MPI_Barrier(snapshot.GetCommunicator());
+	            MPI_Barrier(snapshot.GetCommunicator()); 
             }
 
             if(snapshot.GetCommunicator().rank() == 0)

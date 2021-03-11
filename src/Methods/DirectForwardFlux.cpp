@@ -37,8 +37,8 @@ namespace SSAGES
 		
 		auto cvs = cvmanager.GetCVs(cvmask_);
 		// check the structure at the beginning of the simulation
-		if (iteration_ == 0)
-			CheckInitialStructure(cvs);
+		//if (iteration_ == 0)
+		//	CheckInitialStructure(cvs);
 
 		// if _computefluxA0
 		if (_initialFluxFlag)
@@ -373,7 +373,7 @@ namespace SSAGES
 		// now that queue is populated initialize tasks for all processors
 		// ==============================
 		unsigned int shouldpop_local = true;
-		MPI_Barrier(comm_); // ???
+		//MPI_Barrier(comm_); // ???
 		PopQueueMPI(snapshot,cvs,shouldpop_local);
 	}	
 }

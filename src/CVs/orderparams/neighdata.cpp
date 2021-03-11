@@ -18,6 +18,8 @@
 #include "lattice.h"
 #include "getneigh.h"
 #include "typedefs.h"
+#include <stdio.h> 
+#include <time.h> 
 
 using std::vector;
 using std::complex;
@@ -29,10 +31,30 @@ NeighData::NeighData(const ParticleSystem& psystem, const Lattice& lattice, cons
 {
    // store number of neighbours and neighbour list
    int Ntot = lattice.allnodes.size();
+
+   numneigh_local.resize(Ntot, 0); // num neighbours for each node in proc
+   numneigh.resize(Ntot, 0); // num neighbours for each node
+   //numneigh = getneigh_fast(lattice, psystem.allpars, lattice.nsep);
+
+   numneigh_local = getneigh_fast(lattice, psystem.pars, lattice.nsep);
+   MPI_Barrier(snapshot.GetCommunicator()); 
+   
+	int temp_numneigh_local[Ntot];
+	int temp_numneigh[Ntot];
+	for (int i=0; i < Ntot; ++i) 
+   {
+	   temp_numneigh_local[i] = numneigh_local[i]; 
+	}
+   MPI_Allreduce(&temp_numneigh_local, &temp_numneigh, Ntot, MPI_INT, MPI_SUM, snapshot.GetCommunicator());
+   for (int i=0; i < Ntot; ++i) 
+   {
+	   numneigh[i] = temp_numneigh[i];
+	}
+
+   /*slow old version 
    int n = lattice.nodes.size();
    numneigh_local.resize(n, 0); // num neighbours for each node in proc
-   numneigh.resize(Ntot, 0); // num neighbours for each node in proc
-
+   numneigh.resize(Ntot, 0); // num neighbours for each node 
    int comm_size;
    MPI_Comm_size(snapshot.GetCommunicator(), &comm_size);
    int recvcounts[comm_size];
@@ -43,10 +65,8 @@ NeighData::NeighData(const ParticleSystem& psystem, const Lattice& lattice, cons
    {
 		displs[i] = displs[i-1] + recvcounts[i-1];
 	}
-
    numneigh_local = getneigh(lattice, psystem.allpars, lattice.nsep);
-
-   MPI_Barrier(snapshot.GetCommunicator());
+   MPI_Barrier(snapshot.GetCommunicator()); 
    
 	int temp_numneigh_local[n];
 	int temp_numneigh[Ntot];
@@ -58,7 +78,8 @@ NeighData::NeighData(const ParticleSystem& psystem, const Lattice& lattice, cons
 	for (int i=0; i < Ntot; ++i) 
    {
 	   numneigh[i] = temp_numneigh[i];
-	}
+	} */
+    
 }
 
 
@@ -119,8 +140,8 @@ bool isnodesneigh(const Node& n1, const Node& n2, const Lattice& lattice, double
    // compute separation between nodes (store in s)
    sepnodes(n1, n2, lattice.lboxx, lattice.lboxy, lattice.lboxz, lattice.zperiodic, s);
 
-   if ((std::abs(s[0]) < lattice.lcellx * 2) && (std::abs(s[1]) < lattice.lcelly * 2)
-       && (std::abs(s[2]) < lattice.lcellz * 2)) {
+   if ((std::fabs(s[0]) < lattice.lcellx * 2) && (std::fabs(s[1]) < lattice.lcelly * 2)
+       && (std::fabs(s[2]) < lattice.lcellz * 2)) {
       rsq = s[0] * s[0] + s[1] * s[1] + s[2] * s[2];
       double dist = lattice.lcellx * lattice.lcellx + 
                   lattice.lcelly * lattice.lcelly + lattice.lcellz * lattice.lcellz;

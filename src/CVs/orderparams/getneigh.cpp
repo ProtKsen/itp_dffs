@@ -1,6 +1,7 @@
 #include "boost/multi_array.hpp"
 #include <complex>
 #include <iostream>
+#include <fstream>
 #include <math.h>
 #include "constants.h"
 #include "particle.h"
@@ -8,6 +9,7 @@
 #include "box.h"
 #include "opfunctions.h"
 #include "getneigh.h"
+#include <string>
 
 using std::complex;
 using std::vector;
@@ -66,6 +68,52 @@ vector<int> getneigh(const Lattice& lattice, const vector<Particle>& allpars, co
          if ((s[0] * s[0] + s[1] * s[1] + s[2] * s[2]) <= nsep * nsep)
          {
             ++numneigh[i];
+         }
+      }
+   }
+   return numneigh;
+}
+
+int jlk_to_number2(int j, int l, int k, int num_cells)
+{
+   if (j < 0) {j = num_cells - abs(j)%num_cells;}
+   if (l < 0) {l = num_cells - abs(l)%num_cells;}
+   if (k < 0) {k = num_cells - abs(k)%num_cells;}
+   return (j%num_cells)*num_cells*num_cells+(l%num_cells)*num_cells+(k%num_cells);
+}
+
+vector<int> getneigh_fast(const Lattice& lattice, const vector<Particle>& pars, const int nsep)
+{
+   int n = lattice.allnodes.size(); // the number of nodes 
+   int np = pars.size(); // number of all particles
+   std::vector<int> numneigh;
+   numneigh.resize(n, 0);
+
+   double s[3];
+
+   for (int i = 0; i < np; ++i)
+   {
+      // find closest node
+      int closest_node_j = round(pars[i].pos[0] / lattice.lcellx);
+      int closest_node_l = round(pars[i].pos[1] / lattice.lcelly);
+      int closest_node_k = round(pars[i].pos[2] / lattice.lcellz);
+      int delta = ceil(nsep / lattice.lboxx) + 3;
+      
+      for (int j = closest_node_j - delta ; j <= closest_node_j + delta; ++j)
+      {
+         for (int l = closest_node_l - delta ; l <= closest_node_l + delta; ++l)
+         {
+            for (int k = closest_node_k - delta ; k <= closest_node_k + delta; ++k)
+            {
+               int node = jlk_to_number2(j, l, k, lattice.numcells_1d);
+
+               sepnp(lattice.allnodes[node], pars[i], lattice.lboxx, 
+               lattice.lboxy, lattice.lboxz, lattice.zperiodic, s);
+               if ((s[0] * s[0] + s[1] * s[1] + s[2] * s[2]) <= nsep * nsep)
+               {
+                 ++numneigh[node];
+               }
+            }
          }
       }
    }
