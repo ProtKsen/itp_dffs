@@ -1,4 +1,4 @@
-set(EIGEN_REPOSITORY "https://gitlab.com/libeigen/eigen.git")
+set(EIGEN_REPOSITORY "git://gitlab.com/libeigen/eigen.git")
 set(EIGEN_TAG 3.3.7)
 set(EIGEN_PATCH "${CMAKE_CURRENT_SOURCE_DIR}/include/patches/eigen-using-std-real.patch")
 
