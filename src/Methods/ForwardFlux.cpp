@@ -139,35 +139,33 @@ namespace SSAGES
         myWalk = world_.rank()/comm_.size(); 
         int success_count = 0;
 
-        for (int n_of_walk = 0; n_of_walk < numb_walk; n_of_walk++)
+        int success_count = 0;
+        for (int i = 0; i < world_.size(); i++)
 		{
-			for (int n_in_comm = 0; n_in_comm < comm_.size(); n_in_comm++)
-			{
-				int i = n_of_walk * comm_.size() + n_in_comm;
-				if (successes[i] == true)
-				{ 
-					if (n_of_walk == myWalk && n_in_comm == comm_.rank())
-					{
-						int l,n,a,lprev,nprev,aprev;
-						//update ffsconfigid's l,n,a
-						//note lprev == l for initial interface
-						l = 0;
-						n = _N[0] + success_count;
-						a = 0;
-						lprev = l;
-						nprev = n;
-						aprev = a;
+			// Since we are in State A, the values of lprev, nprev, aprev are all zero.
+			if (successes[i] == true)
+			{ 
+				if (i == world_.rank())
+				{
+					int l,n,a,lprev,nprev,aprev;
+					//update ffsconfigid's l,n,a
+					//note lprev == l for initial interface
+					l = 0;
+					n = _N[0] + success_count;
+					a = 0;
+					lprev = l;
+					nprev = n;
+					aprev = a;
 
-						FFSConfigID newid = FFSConfigID(l,n,a,lprev,nprev,aprev);
-						Lambda0ConfigLibrary.emplace_back(l,n,a,lprev,nprev,aprev);
-						WriteFFSConfiguration(snapshot,newid,1);
-					}
-					if (n_in_comm == comm_.rank())
-						success_count++;
+					FFSConfigID newid = FFSConfigID(l,n,a,lprev,nprev,aprev);
+					Lambda0ConfigLibrary.emplace_back(l,n,a,lprev,nprev,aprev);
+					WriteFFSConfiguration(snapshot,newid,1);
 				}
-				MPI_Barrier(comm_);  // for correct process of  WriteFFSConfiguration  
-        	}
-		}  
+				if (i % comm_.size() == comm_.rank())
+					success_count++;
+			}
+			MPI_Barrier(comm_);
+        }
 
         // all procs update correctly
         _N[0] += success_count;
@@ -430,55 +428,48 @@ namespace SSAGES
 		std::vector<unsigned int> shouldpop (world_.size(),0);
         MPI_Allgather(&shouldpop_local,1,MPI_UNSIGNED,shouldpop.data(),1,MPI_UNSIGNED,world_);
 		
-        int myWalk;
-        myWalk = snapshot->GetWalkerID();
-        int numb_walk = world_.size()/comm_.size();   
-        
-		for (int n_of_walk=0;n_of_walk<numb_walk;n_of_walk++)
+        // I don't pass the queue information between procs, but I do syncronize 'shouldpop'.
+        // As a result, all proc should have the same queue throughout the simulation.
+		for (int i=0;i<world_.size();i++)
 		{
-			for (int n_in_comm=0; n_in_comm<comm_.size(); n_in_comm++)
-			{
-				int i = n_of_walk * comm_.size() + n_in_comm;
-				if (shouldpop[i] == true)
-		  	   	{ 
-					if (n_of_walk == myWalk)
-					{ //if rank matches read and pop
-						if (n_in_comm == comm_.rank())
-						{
-							if (!FFSConfigIDQueue.empty())
-					 		{ //if queue has tasks
-								myFFSConfigID = FFSConfigIDQueue.front();
-								ReadFFSConfiguration (snapshot, myFFSConfigID,true);
+        	if (shouldpop[i] == true)
+		  	{ 
+				if (i == world_.rank())
+				{ //if rank matches read and pop
+					if (!FFSConfigIDQueue.empty())
+					{ //if queue has tasks
+						myFFSConfigID = FFSConfigIDQueue.front();
+						ReadFFSConfiguration (snapshot, myFFSConfigID,true);
 						
-								//open new trajectory file, write first frame
-								if (_saveTrajectories)
-								{ 
-									OpenTrajectoryFile(_trajectory_file);
-									AppendTrajectoryFile(snapshot,_trajectory_file);
-								}
-                        
-								//Trigger a rebuild of the CVs since we reset the positions
-								cvs[0]->Evaluate(*snapshot);
-								_cvvalue = cvs[0]->GetValue();
-								_cvvalue_previous = _cvvalue;
-								_pop_tried_but_empty_queue = false;
-								FFSConfigIDQueue.pop_front();
-					 		}
-							else
-							{ //queue is empty, need to wait for new tasks to come in
-								_pop_tried_but_empty_queue = true;
-							}
+						//open new trajectory file, write first frame
+						if (_saveTrajectories)
+						{ 
+							OpenTrajectoryFile(_trajectory_file);
+							AppendTrajectoryFile(snapshot,_trajectory_file);
 						}
+
+						//Trigger a rebuild of the CVs since we reset the positions
+						cvs[0]->Evaluate(*snapshot);
+						_cvvalue = cvs[0]->GetValue();
+						_cvvalue_previous = _cvvalue;
+
+						_pop_tried_but_empty_queue = false;
+						FFSConfigIDQueue.pop_front();
 					}
 					else
-					{ //else if rank doesnt match, just pop 
-						if (!FFSConfigIDQueue.empty() && n_in_comm == 0 )
-							FFSConfigIDQueue.pop_front();
+					{ //queue is empty, need to wait for new tasks to come in
+						_pop_tried_but_empty_queue = true;
 					}
 				}
-				//MPI_Barrier(comm_);  // for correct process of  ReadFFSConfiguration  
+				else
+				{ //else if rank doesnt match, just pop 
+					if (!FFSConfigIDQueue.empty() && (i % comm_.size()) == comm_.rank())
+						FFSConfigIDQueue.pop_front();
+				}
 			}
+			MPI_Barrier(comm_);
         }
+        // ==============================
     }
 
     void ForwardFlux::ComputeCommittorProbability(Snapshot *snapshot)

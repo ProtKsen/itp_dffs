@@ -120,51 +120,43 @@ namespace SSAGES
 		// I dont pass the queue information between procs but I do syncronize 'successes' and 'failures'
 		//   as a reuslt all proc should have the same queue throughout the simulation
 
-        int numb_walk = world_.size()/comm_.size(); // the number of walkers
-        int myWalk;  // current walker
-        myWalk = world_.rank()/comm_.size();    
-        
-		for (int n_of_walk = 0; n_of_walk < numb_walk; n_of_walk++)
+        for (int i=0;i<world_.size();i++) 
 		{
-			for (int n_in_comm = 0; n_in_comm < comm_.size(); n_in_comm++)
-			{
-			   	int i = n_of_walk * comm_.size() + n_in_comm;
-			   	int l,n,a,lprev,nprev,aprev;
-			   	// write config to lambda+1
-			   	lprev = myFFSConfigID.l;
-			   	nprev = myFFSConfigID.n;
-			   	aprev = myFFSConfigID.a;
+			int l,n,a,lprev,nprev,aprev;
+			// write config to lambda+1
+			lprev = myFFSConfigID.l;
+			nprev = myFFSConfigID.n;
+			aprev = myFFSConfigID.a;
 
-				if (successes[i] == true)
-				{ 
-					if (n_of_walk == myWalk && n_in_comm == comm_.rank())
-					{
-						//update ffsconfigid's l,n,a
-						l = _current_interface + 1;
-						n = _S[_current_interface] + success_count;
-						a = 0;
-						FFSConfigID newid = FFSConfigID(l,n,a,lprev,nprev,aprev);
-						WriteFFSConfiguration(snapshot,newid,1);
-					}
-					if (n_in_comm == comm_.rank())
-						success_count++;
+			if (successes[i] == true)
+			{ 
+				if (i == world_.rank())
+				{
+					//update ffsconfigid's l,n,a
+					l = _current_interface + 1;
+					n = _S[_current_interface] + success_count;
+					a = 0;
+					FFSConfigID newid = FFSConfigID(l,n,a,lprev,nprev,aprev);
+					WriteFFSConfiguration(snapshot,newid,1);
 				}
-				if (failures[i] == true)
-				{ 
-					if (n_of_walk == myWalk && n_in_comm == comm_.rank())
-					{
-						//update ffsconfigid's l,n,a
-						l = 0; //only fail at lambda 0, 
-						n = _nfailure_total + fail_count;
-						a = 0;
-						FFSConfigID newid = FFSConfigID(l,n,a,lprev,nprev,aprev);
-						WriteFFSConfiguration(snapshot,newid,0);
-					}
-					if (n_in_comm == comm_.rank())
-						fail_count++;
+				if ((i % comm_.size()) == comm_.rank())
+					success_count++;
+			}
+			if (failures[i] == true)
+			{ 
+				if (i == world_.rank())
+				{
+					//update ffsconfigid's l,n,a
+					l = 0; //only fail at lambda 0, 
+					n = _nfailure_total + fail_count;
+					a = 0;
+					FFSConfigID newid = FFSConfigID(l,n,a,lprev,nprev,aprev);
+					WriteFFSConfiguration(snapshot,newid,0);
 				}
-				MPI_Barrier(comm_); // for correct process of WriteFFSConfiguration
-		    }
+				if ((i % comm_.size()) == comm_.rank())
+					fail_count++;
+			}
+			MPI_Barrier(comm_); // for correct process of WriteFFSConfiguration
 		}
 
 		//update trajectories
