@@ -139,7 +139,6 @@ namespace SSAGES
         myWalk = world_.rank()/comm_.size(); 
         int success_count = 0;
 
-        int success_count = 0;
         for (int i = 0; i < world_.size(); i++)
 		{
 			// Since we are in State A, the values of lprev, nprev, aprev are all zero.
