@@ -62,8 +62,8 @@ elseif (LAMMPS)
     
     # Check if LAMMPS version is supported, otherwise download default
     if (NOT ";${SUPPORTED_LAMMPS_VERSIONS};" MATCHES ";${LAMMPS_VERSION};")
-        set (LAMMPS_VERSION "30 Jul 2016")
-        set (LAMMPS_TAG r15407)
+        set (LAMMPS_VERSION "16 Mar 2018")
+        set (LAMMPS_TAG stable_16Mar2018)
         message (STATUS "\n-- Using default version of LAMMPS (${LAMMPS_VERSION}).\n-- ")
     else ()
         string (REGEX REPLACE " " "" LAMMPS_TAG "${LAMMPS_VERSION}")
@@ -83,7 +83,7 @@ elseif (LAMMPS)
     ExternalProject_Add(
         lammps-download
         DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}
-        GIT_REPOSITORY git://github.com/lammps/lammps.git
+        GIT_REPOSITORY https://github.com/lammps/lammps.git
         GIT_TAG ${LAMMPS_TAG}
         TIMEOUT 600
         CONFIGURE_COMMAND ""
