@@ -248,6 +248,8 @@ namespace SSAGES
 		const auto& HMatrix = snapshot->GetHMatrix();
 		const auto& timestep = snapshot->GetIteration();
 		int myWalk = snapshot->GetWalkerID();
+		const auto& types = snapshot->GetAtomTypes();
+
         // Write the dump file out
 		//all processes in the communicator write their dump file part
 
@@ -279,7 +281,7 @@ namespace SSAGES
               {
  		       for(size_t i = 0; i< atomID.size(); i++)
  	            {
- 			       f_out<<atomID[i]<<" ";
+ 			       f_out<<atomID[i]<<" "<<types[i]<<" ";;
  			       f_out<<positions[i][0]<<" "<<positions[i][1]<<" "<<positions[i][2]<<" ";
  			       f_out<<velocities[i][0]<<" "<<velocities[i][1]<<" "<<velocities[i][2]<<std::endl;
 		        }  
@@ -305,6 +307,7 @@ namespace SSAGES
 		const auto& positions = snapshot->GetPositions();
 		const auto& velocities = snapshot->GetVelocities();
 		const auto& atomID = snapshot->GetAtomIDs();
+		const auto& types = snapshot->GetAtomTypes();
 
         //first line gives number of atoms
         file << atomID.size() << "\n\n";
@@ -312,7 +315,7 @@ namespace SSAGES
         // Then write positions and velocities
  		for(size_t i = 0; i< atomID.size(); i++)
  		{
- 			file<<atomID[i]<<" ";
+ 			file<<atomID[i]<<" "<<types[i]<<" ";
  			file<<positions[i][0]<<" "<<positions[i][1]<<" "<<positions[i][2]<<" ";
  			file<<velocities[i][0]<<" "<<velocities[i][1]<<" "<<velocities[i][2]<<std::endl;
 		}
@@ -324,6 +327,7 @@ namespace SSAGES
 		auto& velocities = snapshot->GetVelocities();
 		auto& atomID = snapshot->GetAtomIDs();
 		auto& forces = snapshot->GetForces();
+		auto& types = snapshot->GetAtomTypes();
 		//auto& ID = snapshot->GetSnapshotID();
 
         std::ifstream file; 
@@ -361,7 +365,7 @@ namespace SSAGES
                 ffsconfig.aprev = std::stoi(tokens[2]);
             }
             // all other lines contain config information
-            else if ((line_count != 0) && (tokens.size() == 7))
+            else if ((line_count != 0) && (tokens.size() == 8))
 			{
                 //FIXME: try using snapshot->GetLocalIndex()
 
@@ -372,21 +376,16 @@ namespace SSAGES
                         atomindex = i;
                 }
 
-                // delete, since atoms for the entire communicator 
-				//are written in one file
-				//if(atomindex < 0)
-                //{
-                    //std::cout<<"error, could not locate atomID "<<tokens[0]<<" from dumpfile"<<std::endl;
-					//MPI_Abort(world_, EXIT_FAILURE);
-				//}
-				if(atomindex >= 0) // >=0 иначе теряем атом!!!
+
+				if(atomindex >= 0)
                 {
-                	positions[atomindex][0] = std::stod(tokens[1]);
-                	positions[atomindex][1] = std::stod(tokens[2]);
-                	positions[atomindex][2] = std::stod(tokens[3]);
-                	velocities[atomindex][0] = std::stod(tokens[4]);
-                	velocities[atomindex][1] = std::stod(tokens[5]);
-                	velocities[atomindex][2] = std::stod(tokens[6]);
+					types[atomindex] = std::stod(tokens[1]);
+                	positions[atomindex][0] = std::stod(tokens[2]);
+                	positions[atomindex][1] = std::stod(tokens[3]);
+                	positions[atomindex][2] = std::stod(tokens[4]);
+                	velocities[atomindex][0] = std::stod(tokens[5]);
+                	velocities[atomindex][1] = std::stod(tokens[6]);
+                	velocities[atomindex][2] = std::stod(tokens[7]);
 
                 	for(auto& force : forces)
                     	force.setZero();
