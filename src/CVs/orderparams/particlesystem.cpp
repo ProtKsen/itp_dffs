@@ -98,6 +98,10 @@ ParticleSystem::ParticleSystem(string pfile, const SSAGES::Snapshot& snapshot)
    linval = atof(params["q6link"].c_str());
    nlinks = atoi(params["q6numlinks"].c_str());
 
+   // write results and tests
+   writeresults = bmap[params["writeresults"]];
+   writestruct = bmap[params["writestruct"]];
+
    if (LOGGING) {
       cout << LOGMSG << "read " << allpars.size() << " particles" << endl
            << LOGMSG << "values for particle system: " << endl

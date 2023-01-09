@@ -134,11 +134,6 @@ namespace SSAGES
         //for each traj that crossed to lambda0 in forward direction, we need to write it to disk (FFSConfigurationFile)
         MPI_Allgather(&success_local,1,MPI_UNSIGNED,successes.data(),1,MPI_UNSIGNED,world_);
 
-        int numb_walk = world_.size()/comm_.size(); // the number of walkers
-        int myWalk;  // current walker
-        myWalk = world_.rank()/comm_.size(); 
-        int success_count = 0;
-
         int success_count = 0;
         for (int i = 0; i < world_.size(); i++)
 		{

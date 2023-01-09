@@ -47,20 +47,18 @@ namespace SSAGES
          */
         void Evaluate(const Snapshot& snapshot) override
         {
-            // Fill empty gradient. 
             int comm_size ;
             MPI_Comm_size(snapshot.GetCommunicator(), &comm_size);
+
             int comm_rank;
             MPI_Comm_rank(snapshot.GetCommunicator(), &comm_rank);
-            int world_rank;
-            MPI_Comm_rank(MPI_COMM_WORLD, &world_rank); 
-            auto timestep = snapshot.GetIteration();
 
-            //for testing
-            //std::string FileTest="Test_lattice_"+std::to_string(snapshot.GetWalkerID())+
-            //                            "_" + std::to_string(snapshot.GetCommunicator().rank()) +".txt";
-            //std::ofstream fout_test(FileTest, std::ios_base::out | std::ios_base::app); 
-            
+            int world_rank;
+            MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+
+            auto timestep = snapshot.GetIteration();
+            const auto& HMatrix = snapshot.GetHMatrix();
+
             val_ = 0;
             if ((timestep > 1) && (timestep % 1 == 0))  // 1 - check lambda on every step
             {
@@ -77,28 +75,36 @@ namespace SSAGES
                 std::vector<VCCLASS> vcclass = classifynodes(lattice, neighdata);
                 std::vector<int> cnums = largestnodescluster(lattice, vcclass);
 
-                //fout_test << "lattice" << std::endl;
-                //for  (int i = 0; i < lattice.allnodes.size(); ++i) 
-                //{
-                //    int in_clust = 0;
-                //    for (int j = 0; j < cnums.size(); ++j)
-                //    {                        
-                //        if (i == cnums[j])
-                //        {
-                //            in_clust = 1;
-                //        }
-                //    }
-                //    fout_test << i << " " << lattice.allnodes[i].pos[0] << " " << 
-                //                lattice.allnodes[i].pos[1] << " " << 
-                //                lattice.allnodes[i].pos[2] << " " <<
-                //                neighdata.numneigh[i] << " " << 
-                //                vcclass[i] << " " << in_clust << std::endl;                    
-                //}               
+                if (psystem.writestruct & snapshot.GetCommunicator().rank() == 0)
+                {
+                    std::string FileOut="Structure.txt";
+                    std::ofstream fout(FileOut, std::ios_base::out | std::ios_base::app); 
+                
+                    fout << "timestep " << snapshot.GetIteration() << std::endl;
+                    fout << "Box " << HMatrix(0,0) << " " << HMatrix(1,1) << " " << HMatrix(2,2) << std::endl;
+                    fout << "id x y z num_neighbours phase is_in_clust" << std::endl;
+                    for  (int i = 0; i < lattice.allnodes.size(); ++i) 
+                    {
+                        int in_clust = 0;
+                        for (int j = 0; j < cnums.size(); ++j)
+                        {                        
+                            if (i == cnums[j])
+                            {
+                                in_clust = 1;
+                            }
+                        }
+                        fout << i << " " << lattice.allnodes[i].pos[0] << " " << 
+                                    lattice.allnodes[i].pos[1] << " " << 
+                                    lattice.allnodes[i].pos[2] << " " <<
+                                    neighdata.numneigh[i] << " " << 
+                                    vcclass[i] << " " << in_clust << std::endl;                    
+                    } 
+                }            
 
-                val_ = cnums.size() * lattice.lcellx * lattice.lcelly * lattice.lcellz;
+                val_ = cnums.size(); // * lattice.lcellx * lattice.lcelly * lattice.lcellz;
 
                 // write results
-               if (snapshot.GetCommunicator().rank() == 0)
+               if (psystem.writeresults & snapshot.GetCommunicator().rank() == 0)
                {
 		           auto dumpfilename = snapshot.GetIteration(); 
                    std::system("mkdir -p CVs");

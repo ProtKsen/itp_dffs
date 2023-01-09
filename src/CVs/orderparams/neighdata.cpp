@@ -51,35 +51,6 @@ NeighData::NeighData(const ParticleSystem& psystem, const Lattice& lattice, cons
 	   numneigh[i] = temp_numneigh[i];
 	}
 
-   /*slow old version 
-   int n = lattice.nodes.size();
-   numneigh_local.resize(n, 0); // num neighbours for each node in proc
-   numneigh.resize(Ntot, 0); // num neighbours for each node 
-   int comm_size;
-   MPI_Comm_size(snapshot.GetCommunicator(), &comm_size);
-   int recvcounts[comm_size];
-	MPI_Allgather(&n, 1, MPI_INT, &recvcounts, 1, MPI_INT, snapshot.GetCommunicator()); 
-	int displs[comm_size];
-	displs[0]=0;
-	for (int i = 1; i < comm_size; ++i) 
-   {
-		displs[i] = displs[i-1] + recvcounts[i-1];
-	}
-   numneigh_local = getneigh(lattice, psystem.allpars, lattice.nsep);
-   MPI_Barrier(snapshot.GetCommunicator()); 
-   
-	int temp_numneigh_local[n];
-	int temp_numneigh[Ntot];
-	for (int i=0; i < n; ++i) 
-   {
-	   temp_numneigh_local[i] = numneigh_local[i]; 
-	}
-	MPI_Allgatherv (&temp_numneigh_local, n, MPI_INT, &temp_numneigh, recvcounts, displs, MPI_INT, snapshot.GetCommunicator());
-	for (int i=0; i < Ntot; ++i) 
-   {
-	   numneigh[i] = temp_numneigh[i];
-	} */
-    
 }
 
 
