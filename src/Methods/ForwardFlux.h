@@ -355,7 +355,13 @@ namespace SSAGES
 			}
 
 			// This is to generate an artificial Lambda0ConfigLibrary, Hadi's code does this for real
-			// THIS SHOULD BE SOMEWHERE ELSE!!! 
+			// THIS SHOULD BE SOMEWHERE ELSE!!!
+            if (!_initialFluxFlag)
+		    {
+                _N0Target = NLastSuccessful;
+            }
+
+
 			Lambda0ConfigLibrary.resize(_N0Target);
 			std::normal_distribution<double> distribution(0,1);
 			for (unsigned int i = 0; i < _N0Target ; i++)
