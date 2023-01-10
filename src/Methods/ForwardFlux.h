@@ -356,10 +356,10 @@ namespace SSAGES
 
 			// This is to generate an artificial Lambda0ConfigLibrary, Hadi's code does this for real
 			// THIS SHOULD BE SOMEWHERE ELSE!!!
-            if (!_initialFluxFlag)
-		    {
-                _N0Target = NLastSuccessful;
-            }
+			if (!_initialFluxFlag)
+			{
+				_N0Target = NLastSuccessful;
+			}
 
 
 			Lambda0ConfigLibrary.resize(_N0Target);
