@@ -281,7 +281,7 @@ namespace SSAGES
               {
  		       for(size_t i = 0; i< atomID.size(); i++)
  	            {
- 			       f_out<<atomID[i]<<" "<<types[i]<<" ";;
+ 			       f_out<<atomID[i]<<" "<<types[i]<<" ";
  			       f_out<<positions[i][0]<<" "<<positions[i][1]<<" "<<positions[i][2]<<" ";
  			       f_out<<velocities[i][0]<<" "<<velocities[i][1]<<" "<<velocities[i][2]<<std::endl;
 		        }  
@@ -379,7 +379,7 @@ namespace SSAGES
 
 				if(atomindex >= 0)
                 {
-					types[atomindex] = std::stod(tokens[1]);
+					types[atomindex] = std::stoi(tokens[1]);
                 	positions[atomindex][0] = std::stod(tokens[2]);
                 	positions[atomindex][1] = std::stod(tokens[3]);
                 	positions[atomindex][2] = std::stod(tokens[4]);
