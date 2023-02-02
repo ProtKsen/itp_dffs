@@ -99,8 +99,8 @@ ParticleSystem::ParticleSystem(string pfile, const SSAGES::Snapshot& snapshot)
    nlinks = atoi(params["q6numlinks"].c_str());
 
    // write results and tests
-   writeresults = bmap[params["writeresults"]];
-   writestruct = bmap[params["writestruct"]];
+   bool writeresults = bmap[params["writeresults"]];
+   bool writestruct = bmap[params["writestruct"]];
 
    if (LOGGING) {
       cout << LOGMSG << "read " << allpars.size() << " particles" << endl
