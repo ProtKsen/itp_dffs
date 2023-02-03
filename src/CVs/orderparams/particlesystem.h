@@ -34,6 +34,8 @@ public:
    unsigned int nlinks;
    // neighbour separation, if rij < nsep particles are neighbours
    double nsep;
+   bool writeresults;
+   bool writestruct;
 };
 
 #endif
