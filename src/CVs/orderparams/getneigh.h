@@ -11,6 +11,6 @@
 
 //std::vector<int> xtalpars(const std::vector<int>&, const int);
 std::vector<int> getneigh(const Lattice&, const std::vector<Particle>&, const int);
-std::vector<int> getneigh_fast(const Lattice&, const std::vector<Particle>&, const int);
+std::vector<int> getneigh_fast(const Lattice&, const std::vector<Particle>&, const int, const vector<CVPCLASS> cvpclass);
 
 #endif

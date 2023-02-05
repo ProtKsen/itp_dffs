@@ -26,16 +26,20 @@ public:
    vector<Particle> allpars;
    // simulation box
    Box simbox;
-   // number of surface particles
+   // the number of surface particles
    unsigned int nsurf;
    // threshold value of Sij for particles i and j to form a crystal link
    double linval;
    // num links for particle to be in crystalline environment
    unsigned int nlinks;
-   // neighbour separation, if rij < nsep particles are neighbours
-   double nsep;
-   bool writeresults;
-   bool writestruct;
+   // neighbour separation, if rij < r_near_neigh particles are neighbours
+   double r_near_neigh;
+   // the number of neighbours for particle to be liquid
+   unsigned int num_neighbours_liquid;
+   // write test information
+   bool write_results;
+   bool write_struct;
+   
 };
 
 #endif

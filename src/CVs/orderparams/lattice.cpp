@@ -31,14 +31,10 @@ Lattice::Lattice(string pfile, const SSAGES::Snapshot& snapshot)
    // parameters
 
    std::map<std::string, std::string> params = readparams(pfile);
-   nsep = atof(params["lattsep"].c_str());
-   numcells_1d = atoi(params["lattsize"].c_str());
-   ncrneigh = atoi(params["lattncrneigh"].c_str());
+   r_sep = atof(params["latt_sep"].c_str());
+   num_cells_1d = atoi(params["num_cells_1d"].c_str());
    map<string, bool> bmap;
-   bmap["True"] = true;
-   bmap["False"] = false;	 
-   zperiodic = bmap[params["zperiodic"]];
-   int numcells = pow(numcells_1d, 3);
+   int numcells = pow(num_cells_1d, 3);
 
    auto HMatrix = snapshot.GetHMatrix();
    lboxx = HMatrix(0,0);
@@ -46,9 +42,9 @@ Lattice::Lattice(string pfile, const SSAGES::Snapshot& snapshot)
    lboxz = HMatrix(2,2);
 
    //cell's size
-   lcellx = lboxx/numcells_1d;
-   lcelly = lboxy/numcells_1d;
-   lcellz = lboxz/numcells_1d; 
+   lcellx = lboxx/num_cells_1d;
+   lcelly = lboxy/num_cells_1d;
+   lcellz = lboxz/num_cells_1d; 
 
    double minx = 0.0;
    double miny = 0.0;
@@ -56,38 +52,38 @@ Lattice::Lattice(string pfile, const SSAGES::Snapshot& snapshot)
    
    allnodes.resize(numcells);
    Node nod;
-   for (int j=0; j< numcells_1d; ++j) 
+   for (int j=0; j< num_cells_1d; ++j) 
    {
-	   for (int l=0; l< numcells_1d; ++l)
+	   for (int l=0; l< num_cells_1d; ++l)
 	   {
-		   for (int k=0; k< numcells_1d; ++k)
+		   for (int k=0; k< num_cells_1d; ++k)
 		   {
-	         nod.pos[0] = minx + (j % numcells_1d) * lcellx;
-		      nod.pos[1] = miny + (l % numcells_1d) * lcelly;
-		      nod.pos[2] = minz + (k % numcells_1d) * lcellz;
-            nod.number = jlk_to_number(j, l, k, numcells_1d);
+	         nod.pos[0] = minx + (j % num_cells_1d) * lcellx;
+		      nod.pos[1] = miny + (l % num_cells_1d) * lcelly;
+		      nod.pos[2] = minz + (k % num_cells_1d) * lcellz;
+            nod.number = jlk_to_number(j, l, k, num_cells_1d);
 	         allnodes[nod.number] = nod;
          }
       }
    }
 
-   int leftj = comm_rank * floor(numcells_1d / comm_size);
-   int rightj = (comm_rank + 1) * floor(numcells_1d / comm_size);
+   int leftj = comm_rank * floor(num_cells_1d / comm_size);
+   int rightj = (comm_rank + 1) * floor(num_cells_1d / comm_size);
    if (comm_rank == comm_size - 1) 
    {
-      rightj = numcells_1d;
+      rightj = num_cells_1d;
    }
-   nodes.resize((rightj - leftj) * (numcells_1d) * (numcells_1d));
+   nodes.resize((rightj - leftj) * (num_cells_1d) * (num_cells_1d));
    int count = 0;
    for (int j = leftj; j < rightj; ++j) 
    {
-	   for (int l=0; l< numcells_1d; ++l)
+	   for (int l=0; l< num_cells_1d; ++l)
 	   {
-		   for (int k=0; k< numcells_1d; ++k)
+		   for (int k=0; k< num_cells_1d; ++k)
 		   {
-	         nod.pos[0] = minx + (j % numcells_1d) * lcellx;
-		      nod.pos[1] = miny + (l % numcells_1d) * lcelly;
-		      nod.pos[2] = minz + (k % numcells_1d) * lcellz;
+	         nod.pos[0] = minx + (j % num_cells_1d) * lcellx;
+		      nod.pos[1] = miny + (l % num_cells_1d) * lcelly;
+		      nod.pos[2] = minz + (k % num_cells_1d) * lcellz;
             nod.number = count;
 	         nodes[nod.number] = nod;
             ++count;

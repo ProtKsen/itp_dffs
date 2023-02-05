@@ -22,12 +22,11 @@ public:
    // particle positions
    vector<Node> nodes;
    vector<Node> allnodes;
-   // num crystalline neighbours for particle to be in crystalline environment
-   unsigned int ncrneigh;
+   
    // the number of nodes in one dimension
-   unsigned int numcells_1d;
-   // neighbour separation, if r < nsep particles are neighbours
-   double nsep;
+   unsigned int num_cells_1d;
+   
+   double r_sep;
    double lboxx;
    double lboxy;
    double lboxz;

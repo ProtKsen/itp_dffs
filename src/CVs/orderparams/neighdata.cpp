@@ -27,16 +27,16 @@ using std::norm;
 
 // Constructor for NieghData object
 
-NeighData::NeighData(const ParticleSystem& psystem, const Lattice& lattice, const SSAGES::Snapshot& snapshot)
+NeighData::NeighData(const ParticleSystem& psystem, const Lattice& lattice, 
+                     const SSAGES::Snapshot& snapshot, const vector<CVPCLASS>& cvpclass)
 {
-   // store number of neighbours and neighbour list
+   // store number of liquid neighbours and neighbour list
    int Ntot = lattice.allnodes.size();
 
-   numneigh_local.resize(Ntot, 0); // num neighbours for each node in proc
-   numneigh.resize(Ntot, 0); // num neighbours for each node
-   //numneigh = getneigh_fast(lattice, psystem.allpars, lattice.nsep);
+   numneigh_local.resize(Ntot, 0); // num liquid neighbours for each node in proc
+   numneigh.resize(Ntot, 0); // num  liquid neighbours for each node
 
-   numneigh_local = getneigh_fast(lattice, psystem.pars, lattice.nsep);
+   numneigh_local = getneigh_fast(lattice, psystem.pars, lattice.r_sep, cvpclass);
    MPI_Barrier(snapshot.GetCommunicator()); 
    
 	int temp_numneigh_local[Ntot];
@@ -54,23 +54,48 @@ NeighData::NeighData(const ParticleSystem& psystem, const Lattice& lattice, cons
 }
 
 
-vector<VCCLASS> classifynodes(const Lattice& lattice, const NeighData& neighdata)
+vector<CVNCLASS> classifynodes(const Lattice& lattice, const NeighData& neighdata)
 {
    int n = lattice.allnodes.size();
-   vector<VCCLASS> nodeclass(n, VAP);
+   vector<CVNCLASS> nodeclass(n, VAP);
 
    for (int i = 0; i < n; ++i)
    {
-      if (neighdata.numneigh[i] >= lattice.ncrneigh)
+      if (neighdata.numneigh[i] >= 1)
       {
-         nodeclass[i] = CRYST;
+        nodeclass[i] = FLUID;
       }
    }
    return nodeclass;
 }
 
-inline void sepnodes(const Node& p1, const Node& p2, const int lboxx, 
-                  const int lboxy, const int lboxz, const bool periodicz,  double* s)
+vector<CVPCLASS> classifypars(const ParticleSystem& psystem)
+{
+   int n = psystem.allpars.size();
+   vector<CVPCLASS> parclass(n, VAPOUR);
+   
+   vector<double> neighs(n, 0);
+   for (int i = 0; i < n; ++i)
+   {    
+        for (int j = 0; j < n; ++j)
+        {
+            double sep[3];
+            psystem.simbox.sep(psystem.allpars[i], psystem.allpars[j], sep);
+            if (sep[0] * sep[0] + sep[1] * sep[1] + sep[2] * sep[2] <= psystem.r_near_neigh)
+            {
+                neighs[i]++;
+            }
+            if (neighs[i] >= psystem.num_neighbours_liquid)
+            {
+                parclass[i] = FLU;
+            }
+        }
+   }
+   return parclass;
+}
+
+double sepnodes(const Node& p1, const Node& p2, const int lboxx, 
+                  const int lboxy, const int lboxz, const bool periodicz)
 {
    double sepx,sepy,sepz;
    sepx = p1.pos[0] - p2.pos[0];
@@ -98,10 +123,8 @@ inline void sepnodes(const Node& p1, const Node& p2, const int lboxx,
       }
    }
 
-   s[0] = sepx;
-   s[1] = sepy;
-   s[2] = sepz;
-   return;
+   double dist =  sepx * sepx + sepy * sepy + sepz * sepz;
+   return dist;
 }
 
 bool isnodesneigh(const Node& n1, const Node& n2, const Lattice& lattice, double& rsq)
@@ -109,19 +132,14 @@ bool isnodesneigh(const Node& n1, const Node& n2, const Lattice& lattice, double
    double s[3];
 
    // compute separation between nodes (store in s)
-   sepnodes(n1, n2, lattice.lboxx, lattice.lboxy, lattice.lboxz, lattice.zperiodic, s);
+   double dist = sepnodes(n1, n2, lattice.lboxx, lattice.lboxy, lattice.lboxz, lattice.zperiodic);
 
-   if ((std::fabs(s[0]) < lattice.lcellx * 2) && (std::fabs(s[1]) < lattice.lcelly * 2)
-       && (std::fabs(s[2]) < lattice.lcellz * 2)) {
-      rsq = s[0] * s[0] + s[1] * s[1] + s[2] * s[2];
-      double dist = lattice.lcellx * lattice.lcellx + 
-                  lattice.lcelly * lattice.lcelly + lattice.lcellz * lattice.lcellz;
-      if (rsq <= dist ) {
-         return true;
-      }
-   }
-   return false;
+   if (dist <= lattice.lcellx * lattice.lcellx + lattice.lcelly * lattice.lcelly + lattice.lcellz * lattice.lcellz)
+        return true;
+   else
+        return false;
 }
+
 
 graph getnodegraph(const Lattice& lattice,
                 const vector<int>& xpars)
@@ -142,13 +160,13 @@ graph getnodegraph(const Lattice& lattice,
 }
 
 
-vector<int> largestnodescluster(const Lattice& lattice, const vector<VCCLASS>& vcclass)
+vector<int> largestnodescluster(const Lattice& lattice, const vector<CVNCLASS>& cvnlass)
 {
    // get vector with indices that are all vapor nodes
 
    vector<int> xps;
    for (int i = 0; i < lattice.allnodes.size(); ++i) {
-      if (vcclass[i] == VAP) {
+      if (cvnlass[i] == VAP) {
          xps.push_back(i);
       }
    }

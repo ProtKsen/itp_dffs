@@ -13,7 +13,7 @@
 struct NeighData
 {
 public:
-   NeighData(const ParticleSystem& psystem, const Lattice& lattice, const SSAGES::Snapshot& snapshot);
+   NeighData(const ParticleSystem& psystem, const Lattice& lattice, const SSAGES::Snapshot& snapshot, const vector<CVPCLASS>& cvpclass);
 
    // we store the number of crystal neighbours for each particle 
    std::vector<int> numneigh;
@@ -21,11 +21,12 @@ public:
 
 };
 
-std::vector<VCCLASS> classifynodes(const Lattice&, const NeighData&);
-std::vector<int> largestnodescluster(const Lattice&, const vector<VCCLASS>&);
+std::vector<CVNCLASS> classifynodes(const Lattice&, const NeighData&);
+std::vector<CVPCLASS> classifypars(const ParticleSystem&);
+std::vector<int> largestnodescluster(const Lattice&, const vector<CVNCLASS>&);
 graph getnodegraph(const Lattice&, const vector<int>&);
 bool isnodesneigh(const Node&, const Node&, const Lattice&, double&);
-inline void sepnodes(const Node&, const Node&, const int, 
-                  const int, const int, const bool,  double*);
+double sepnodes(const Node&, const Node&, const int, 
+                  const int, const int, const bool);
 
 #endif

@@ -65,10 +65,10 @@ ParticleSystem::ParticleSystem(string pfile, const SSAGES::Snapshot& snapshot)
    Particle par;
    for (int i = 0; i < n; ++i) 
    {
-	   par.pos[0] = positions[i][0];
+	    par.pos[0] = positions[i][0];
 		par.pos[1] = positions[i][1];
 		par.pos[2] = positions[i][2];
-	   pars[i]=par;
+	    pars[i]=par;
    }	
 	allpars.resize(Ntot);
    for (int i = 0; i < Ntot; ++i) 
@@ -84,23 +84,29 @@ ParticleSystem::ParticleSystem(string pfile, const SSAGES::Snapshot& snapshot)
    double lboxy = HMatrix(1,1);
    double lboxz = HMatrix(2,2);
 
-   nsep = atof(params["stillsep"].c_str());
+   r_near_neigh = atof(params["r_nearest_neighbours"].c_str());
+
+   num_neighbours_liquid = atoi(params["num_neighbours_liquid"].c_str());
+
    map<string, bool> bmap;
    bmap["True"] = true;
    bmap["False"] = false;	 
-   bool zperiodic = bmap[params["zperiodic"]];
-   simbox = Box(lboxx,lboxy,lboxz,nsep,zperiodic);
+   //bool zperiodic = bmap[params["is_periodic"]];
+   bool zperiodic = true;
+   
+   simbox = Box(lboxx,lboxy,lboxz,r_near_neigh,zperiodic);
 
    // number of surface particles
-   nsurf = atoi(params["nparsurf"].c_str());
+   // nsurf = atoi(params["nparsurf"].c_str());
+   nsurf = 0;
 
    // warning: at the moment these are used for both l=4 and l=6
-   linval = atof(params["q6link"].c_str());
-   nlinks = atoi(params["q6numlinks"].c_str());
+   linval = atof(params["q6_link"].c_str());
+   nlinks = atoi(params["q6_num_links"].c_str());
 
    // write results and tests
-   bool writeresults = bmap[params["writeresults"]];
-   bool writestruct = bmap[params["writestruct"]];
+   write_results = bmap[params["write_results"]];
+   write_struct = bmap[params["write_struct"]];
 
    if (LOGGING) {
       cout << LOGMSG << "read " << allpars.size() << " particles" << endl
@@ -108,7 +114,7 @@ ParticleSystem::ParticleSystem(string pfile, const SSAGES::Snapshot& snapshot)
            << LOGMSG << "lboxx "     << lboxx << endl
            << LOGMSG << "lboxy "     << lboxy << endl
            << LOGMSG << "lboxz "     << lboxz << endl
-           << LOGMSG << "stillsep "  << nsep << endl
+           << LOGMSG << "stillsep "  << r_near_neigh << endl
            << LOGMSG << "zperiodic " << zperiodic << endl
            << LOGMSG << "nparsurf " << nsurf << endl
            << LOGMSG << "q6link " << linval << endl

@@ -62,22 +62,36 @@ namespace SSAGES
             val_ = 0;
             if ((timestep > 1) && (timestep % 1 == 0))  // 1 - check lambda on every step
             {
-                auto n = snapshot.GetNumAtoms();
+                auto n = snapshot.GetNumAtoms(); // the number of atoms for 1 proc
 			    std::fill(grad_.begin(), grad_.end(), Vector3{0,0,0});
 			    grad_.resize(n, Vector3{0,0,0});
 
-                int Ntot = 0; // the whole number of atoms in Comm
+                int Ntot = 0; // the whole number of atoms in Communicator
                 MPI_Allreduce(&n, &Ntot, 1, MPI_INT, MPI_SUM, snapshot.GetCommunicator());
-                std::string pfile="params.out.start.txt";
-                ParticleSystem psystem(pfile, snapshot);
-                Lattice lattice(pfile, snapshot);
-                NeighData neighdata(psystem, lattice, snapshot);
-                std::vector<VCCLASS> vcclass = classifynodes(lattice, neighdata);
-                std::vector<int> cnums = largestnodescluster(lattice, vcclass);
 
-                if (psystem.writestruct & snapshot.GetCommunicator().rank() == 0)
+                // psystem save particle's coordiantes and some system's parameters
+                std::string pfile="order_parameter.txt";
+                ParticleSystem psystem(pfile, snapshot);
+
+                // create virtual lattice
+                Lattice lattice(pfile, snapshot);
+
+                // set phase of particles
+                std::vector<CVPCLASS> cvpclass = classifypars(psystem);
+
+                // calculate the number of liquid neighbours for every node
+                NeighData neighdata(psystem, lattice, snapshot, cvpclass);
+
+                // set phase of nodes                
+                std::vector<CVNCLASS> cvnclass = classifynodes(lattice, neighdata);
+
+                // find the biggest cluster
+                std::vector<int> cnums = largestnodescluster(lattice, cvnclass);
+
+                // write result information about lattice
+                if (psystem.write_struct & snapshot.GetCommunicator().rank() == 0)
                 {
-                    std::string FileOut="Structure.txt";
+                    std::string FileOut="Structure_" + std::to_string(snapshot.GetWalkerID()) + ".txt";
                     std::ofstream fout(FileOut, std::ios_base::out | std::ios_base::app); 
                 
                     fout << "timestep " << snapshot.GetIteration() << std::endl;
@@ -97,14 +111,15 @@ namespace SSAGES
                                     lattice.allnodes[i].pos[1] << " " << 
                                     lattice.allnodes[i].pos[2] << " " <<
                                     neighdata.numneigh[i] << " " << 
-                                    vcclass[i] << " " << in_clust << std::endl;                    
+                                    cvnclass[i] << " " << in_clust << std::endl;                    
                     } 
                 }            
 
-                val_ = cnums.size(); // * lattice.lcellx * lattice.lcelly * lattice.lcellz;
+                // set order parameter
+                val_ = cnums.size() * lattice.lcellx * lattice.lcelly * lattice.lcellz;
 
-                // write results
-               if (psystem.writeresults & snapshot.GetCommunicator().rank() == 0)
+                // write results of order parameter
+               if (psystem.write_results & snapshot.GetCommunicator().rank() == 0)
                {
 		           auto dumpfilename = snapshot.GetIteration(); 
                    std::system("mkdir -p CVs");
