@@ -1,0 +1,33 @@
+# controlling read_dump
+#===============================================================
+variable	Tempo equal 0.72   # целевая температура
+variable	seed_date equal 111017
+#---------------------------------------------------------------
+units		lj
+atom_style	atomic
+
+log             log1
+boundary        p p p
+
+read_restart  rest.end
+
+thermo		1
+thermo_style	custom step temp press vol density lx ly lz 
+thermo_modify flush yes 
+timestep	0.00231832
+#---------------------------------------------------------------
+
+reset_timestep 0
+
+fix	1 all nve 
+fix 1 all temp/berendsen ${Tempo} ${Tempo} 0.231832
+fix	99 all ave/time  1 1000 1000 c_thermo_temp c_thermo_press c_thermo_pe file ptu_end.txt
+
+fix ssages all ssages
+run		1000000000
+
+#===============================================================
+#=============<>     HAPPY END !!!      <>======================
+#===============================================================
+
+

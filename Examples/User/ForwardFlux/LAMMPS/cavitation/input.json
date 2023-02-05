@@ -1,0 +1,27 @@
+{
+        "walkers" : 128,
+        "input" : "cr_nvt",
+        "CVs" :
+        [
+                {
+                        "type" : "CavVolume"
+                        
+                }
+        ],
+        "methods" :
+        [
+                {
+                        "type" : "ForwardFlux",
+                        "flavor" : "DirectForwardFlux",
+                        "nInterfaces" : 51,
+                        "interfaces" : [],
+                        "N0Target" : 5000,
+                        "NLastSuccessful": 1,
+                        "trials" : [],
+                        "computeInitialFlux" : true,
+                        "saveTrajectories" : false,
+                        "currentInterface" : 0,
+                        "outputDirectoryName" : "FFSoutput"
+                }
+        ]
+}
