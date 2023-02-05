@@ -81,8 +81,8 @@ namespace SSAGES
     	double interface_location = _interfaces[i];
         if (_interfaces_increase)
 		{
-          //if ((prev <= interface_location) && (current >= interface_location))
-		  if (current >= interface_location)
+          if ((prev <= interface_location) && (current >= interface_location))
+		  //if (current >= interface_location)
               return 1;
           else if ((prev >= interface_location) && (current <= interface_location))
               return -1;
