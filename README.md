@@ -1,4 +1,4 @@
-Это версия программы SSAGES (https://github.com/SSAGESproject/SSAGES), адаптированная для расчетов частоты нуклеации при кристаллизации и кавитации жидкости методом Direct Forward Flux Sampling (DFFS).
+Это версия программы SSAGES (https://github.com/SSAGESproject/SSAGES), адаптированная для расчетов частоты нуклеации при кристаллизации и кавитации жидкости методом Direct Forward Flux Sampling (DFFS). Статья с описанием алгоритма находится в файле allen2009.pdf.
 
 ### Отличия от базовой версии
 
