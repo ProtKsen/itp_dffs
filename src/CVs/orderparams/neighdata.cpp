@@ -164,23 +164,31 @@ graph getnodegraph(const Lattice& lattice,
 }
 
 
-vector<int> largestnodescluster(const Lattice& lattice, const vector<CVNCLASS>& cvnlass)
+vector<int> largestnodescluster(const Lattice& lattice, const vector<CVNCLASS>& cvnclass)
 {
    // get vector with indices that are all vapor nodes
 
    vector<int> xps;
    for (int i = 0; i < lattice.allnodes.size(); ++i) {
-      if (cvnlass[i] == VAP) {
+      if (cvnclass[i] == VAP) {
          xps.push_back(i);
       }
    }
-   
+
    // graph of xtal particles, with each particle a vertex and each
    // link an edge
    graph xgraph = getnodegraph(lattice, xps);
 
    // largest cluster is the largest connected component of graph
    vector<int> cnums = largestcomponent(xgraph);
+
+   //std::string FileTest="Test.txt";
+   //std::ofstream fout_test(FileTest, std::ios_base::out | std::ios_base::app);
+   //for (int i = 0; i < cnums.size(); ++i) {
+   // fout_test << cnums[i] << " ";
+   //}
+   //fout_test << std::endl;
+   //fout_test.close();
 
    // now largest component returns indexes into array xps, we need
    // to reindex so that it contains indices into psystem.allpars

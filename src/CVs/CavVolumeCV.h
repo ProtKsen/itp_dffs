@@ -81,7 +81,6 @@ namespace SSAGES
 
                 // calculate the number of liquid neighbours for every node
                 NeighData neighdata(psystem, lattice, snapshot, cvpclass);
-                MPI_Barrier(snapshot.GetCommunicator());
 
                 // set phase of nodes                
                 std::vector<CVNCLASS> cvnclass = classifynodes(lattice, neighdata);
@@ -90,9 +89,9 @@ namespace SSAGES
                 std::vector<int> cnums = largestnodescluster(lattice, cvnclass);
 
                 // write result information about lattice
-                if (psystem.write_struct & snapshot.GetCommunicator().rank() == 0)
+                if (psystem.write_struct & snapshot.GetCommunicator().rank() >= 0)
                 {
-                    std::string FileOut="Structure_" + std::to_string(snapshot.GetWalkerID()) + ".txt";
+                    std::string FileOut="Structure_" + std::to_string(snapshot.GetWalkerID()) +"_" + std::to_string(snapshot.GetCommunicator().rank()) + ".txt";
                     std::ofstream fout(FileOut, std::ios_base::out | std::ios_base::app); 
                 
                     fout << "timestep " << snapshot.GetIteration() << std::endl;
