@@ -81,6 +81,7 @@ namespace SSAGES
 
                 // calculate the number of liquid neighbours for every node
                 NeighData neighdata(psystem, lattice, snapshot, cvpclass);
+                MPI_Barrier(snapshot.GetCommunicator());
 
                 // set phase of nodes                
                 std::vector<CVNCLASS> cvnclass = classifynodes(lattice, neighdata);
@@ -119,11 +120,11 @@ namespace SSAGES
                 val_ = cnums.size() * lattice.lcellx * lattice.lcelly * lattice.lcellz;
 
                 // write results of order parameter
-               if (psystem.write_results & snapshot.GetCommunicator().rank() == 0)
+               if (psystem.write_results & snapshot.GetCommunicator().rank() >= 0)
                {
 		           auto dumpfilename = snapshot.GetIteration(); 
                    std::system("mkdir -p CVs");
-                   std::string FileCV="CVs/CV_"+std::to_string(snapshot.GetWalkerID())+".txt";
+                   std::string FileCV="CVs/CV_"+std::to_string(snapshot.GetWalkerID())+ "_" + std::to_string(snapshot.GetCommunicator().rank()) + ".txt";
                    std::ofstream fout_CV(FileCV,std::ios_base::out | std::ios_base::app);  
                    fout_CV << snapshot.GetCommunicator().rank() << " " << dumpfilename << 
                    " "<< val_ << std::endl;

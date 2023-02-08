@@ -461,6 +461,7 @@ namespace SSAGES
 						FFSConfigIDQueue.pop_front();
 				}
 			}
+			//MPI_Barrier(comm_);
         }
         // ==============================
     }
