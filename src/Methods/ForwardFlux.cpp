@@ -470,7 +470,7 @@ namespace SSAGES
 						FFSConfigIDQueue.pop_front();
 				}
 			}
-			MPI_Barrier(comm_);
+			 // MPI_Barrier(comm_); can't start calculate transition probabilities
         }
         // ==============================
     }
