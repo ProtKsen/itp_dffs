@@ -37,7 +37,6 @@ NeighData::NeighData(const ParticleSystem& psystem, const Lattice& lattice,
    numneigh.resize(Ntot, 0); // num liquid neighbours for each node
 
    numneigh_local = getneigh_fast(lattice, psystem.allpars, lattice.r_sep, cvpclass);
-   MPI_Barrier(snapshot.GetCommunicator());
    
 	int temp_numneigh_local[Ntot];
 	int temp_numneigh[Ntot];
