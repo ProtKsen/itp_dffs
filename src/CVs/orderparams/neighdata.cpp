@@ -36,11 +36,11 @@ NeighData::NeighData(const ParticleSystem& psystem, const Lattice& lattice,
    numneigh_local.resize(Ntot, 0); // num liquid neighbours for each node in proc
    numneigh.resize(Ntot, 0); // num liquid neighbours for each node
 
-   numneigh_local = getneigh_fast(lattice, psystem.allpars, lattice.r_sep, cvpclass);
+   numneigh_local = getneigh_fast(lattice, psystem.pars, lattice.r_sep, cvpclass);
    
 	int temp_numneigh_local[Ntot];
 	int temp_numneigh[Ntot];
-	for (int i=0; i < Ntot; ++i) 
+	for (int i=0; i < Ntot; ++i)
    {
 	   temp_numneigh_local[i] = numneigh_local[i]; 
 	}
@@ -48,7 +48,7 @@ NeighData::NeighData(const ParticleSystem& psystem, const Lattice& lattice,
    for (int i=0; i < Ntot; ++i) 
    {
 	   numneigh[i] = temp_numneigh[i];
-	}
+   }
 
 }
 
@@ -76,21 +76,18 @@ vector<CVPCLASS> classifypars(const ParticleSystem& psystem)
    vector<double> neighs(n, 0);
    for (int i = 0; i < n; ++i)
    {    
-        for (int j = 0; j < n; ++j)
+        for (int j = i+1; j < n; ++j)
         {
-            if (i != j)
+            double dist;
+            dist = psystem.simbox.sepsq(psystem.allpars[i], psystem.allpars[j]);
+            if (dist <= psystem.r_near_neigh * psystem.r_near_neigh)
             {
-               double dist;
-               dist = psystem.simbox.sepsq(psystem.allpars[i], psystem.allpars[j]);
-               if (dist <= psystem.r_near_neigh)
-               {
-                  neighs[i]++;
-               }
-               if (neighs[i] >= psystem.num_neighbours_liquid)
-               {
-                  parclass[i] = FLU;
-                  break;
-               }
+               neighs[i]++;
+               neighs[j]++;
+            }
+            if (neighs[i] >= psystem.num_neighbours_liquid)
+            {
+               parclass[i] = FLU;
             }
         }
    }
