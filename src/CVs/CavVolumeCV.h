@@ -18,7 +18,8 @@
 #include "orderparams/lattice.h" 
 #include "orderparams/neighdata.h"
 #include <stdio.h> 
-#include <time.h> 
+#include <time.h>
+#include <ctime>
 
 
 namespace SSAGES
@@ -72,21 +73,46 @@ namespace SSAGES
                 // psystem save particle's coordiantes and some system's parameters
                 std::string pfile="order_parameter.txt";
                 ParticleSystem psystem(pfile, snapshot);
+                
+                //std::string FileTest="Test" + std::to_string(snapshot.GetWalkerID()) +"_" + std::to_string(snapshot.GetCommunicator().rank()) + ".txt";
+                //std::ofstream fout_test(FileTest, std::ios_base::out | std::ios_base::app);
+                //fout_test << "timestep " << snapshot.GetIteration() << std::endl;
+                                
 
+                //int start = std::clock();
                 // create virtual lattice
                 Lattice lattice(pfile, snapshot);
+                //int stop = std::clock();
+                //int delta = (stop - start);
+                //fout_test << "lattice " << std::to_string(delta) << std::endl;
 
                 // set phase of particles
+                //start = std::clock();
                 std::vector<CVPCLASS> cvpclass = classifypars(psystem);
+                //stop = std::clock();
+                //delta = (stop - start);
+                //fout_test << "cvpclass " << std::to_string(delta) << std::endl;
 
                 // calculate the number of liquid neighbours for every node
+                //start = std::clock();
                 NeighData neighdata(psystem, lattice, snapshot, cvpclass);
+                //stop = std::clock();
+                //delta = (stop - start);
+                //fout_test << "neighdata " << std::to_string(delta) << std::endl;
 
-                // set phase of nodes                
+                // set phase of nodes   
+                //start = std::clock();             
                 std::vector<CVNCLASS> cvnclass = classifynodes(lattice, neighdata);
+                //stop = std::clock();
+                //delta = (stop - start);
+                //fout_test << "classifynodes " << std::to_string(delta) << std::endl;
 
                 // find the biggest cluster
+                //start = std::clock();
                 std::vector<int> cnums = largestnodescluster(lattice, cvnclass);
+                //stop = std::clock();
+                //delta = (stop - start);
+                //fout_test << "largestnodescluster " << std::to_string(delta) << std::endl;
 
                 // write result information about lattice
                 if (psystem.write_struct & snapshot.GetCommunicator().rank() >= 0)
