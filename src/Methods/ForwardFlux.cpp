@@ -137,14 +137,14 @@ namespace SSAGES
         int success_count = 0;
         for (int i = 0; i < world_.size(); i++)
 		{   
-            std::string FileTest="Test" + std::to_string(snapshot->GetWalkerID()) +"_" + std::to_string(snapshot->GetCommunicator().rank()) + ".txt";
-            std::ofstream fout_test(FileTest, std::ios_base::out | std::ios_base::app);
-            fout_test << "timestep " << snapshot->GetIteration() << std::endl;
-            for (int i = 0; i < successes.size(); ++i) {
-             fout_test << successes[i] << std::endl;
-            }
-            fout_test << std::endl;
-            fout_test.close();
+            //std::string FileTest="Test" + std::to_string(snapshot->GetWalkerID()) +"_" + std::to_string(snapshot->GetCommunicator().rank()) + ".txt";
+            //std::ofstream fout_test(FileTest, std::ios_base::out | std::ios_base::app);
+            //fout_test << "timestep " << snapshot->GetIteration() << std::endl;
+            //for (int i = 0; i < successes.size(); ++i) {
+            // fout_test << successes[i] << std::endl;
+            //}
+            //fout_test << std::endl;
+            //fout_test.close();
 
 			// Since we are in State A, the values of lprev, nprev, aprev are all zero.
 			if (successes[i] == true)
@@ -168,7 +168,7 @@ namespace SSAGES
 				if (i % comm_.size() == comm_.rank())
 					success_count++;
 			}
-			MPI_Barrier(comm_);
+			MPI_Barrier(comm_); // for correct WriteFFSConfiguration
         }
 
         // all procs update correctly
