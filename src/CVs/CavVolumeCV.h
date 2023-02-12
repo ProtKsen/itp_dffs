@@ -156,9 +156,11 @@ namespace SSAGES
                    fout_CV.close(); 
 		       }           
 
-	            MPI_Barrier(snapshot.GetCommunicator()); 
+
             }
 
+            MPI_Barrier(snapshot.GetCommunicator()); 
+            
             if(snapshot.GetCommunicator().rank() == 0)
                 boxgrad_ = val_*Matrix3::Identity();
         }
