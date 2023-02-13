@@ -110,13 +110,11 @@ inline void Box::sep(const Particle& p1, const Particle& p2, double* s) const
    else if (sepy < -0.5 * lboxy) {
       sepy = sepy + lboxy;
    }
-   if (periodicz) {               
-      if (sepz > 0.5 * lboxz) {
-         sepz = sepz - lboxz;
-      }
-      else if (sepz < -0.5 * lboxz) {
-         sepz = sepz + lboxz;
-      }
+   if (sepz > 0.5 * lboxz) {
+      sepz = sepz - lboxz;
+   }
+   else if (sepz < -0.5 * lboxz) {
+      sepz = sepz + lboxz;
    }
 
    s[0] = sepx;

@@ -34,14 +34,13 @@ float sepnp(const Node& p1, const Particle& p2, const int lboxx,
    else if (sepy < -0.5 * lboxy) {
       sepy = sepy + lboxy;
    }
-   if (periodicz) {               
-      if (sepz > 0.5 * lboxz) {
-         sepz = sepz - lboxz;
-      }
-      else if (sepz < -0.5 * lboxz) {
-         sepz = sepz + lboxz;
-      }
+   if (sepz > 0.5 * lboxz) {
+      sepz = sepz - lboxz;
    }
+   else if (sepz < -0.5 * lboxz) {
+      sepz = sepz + lboxz;
+   }
+   
 
    double dist = sepx * sepx + sepy * sepy + sepz * sepz;
    return dist;
@@ -78,9 +77,9 @@ int jlk_to_number2(int j, int l, int k, int num_cells)
    if (l < 0) {l = num_cells + l;}
    if (k < 0) {k = num_cells + k;}
 
-   if (j > num_cells) {j = j - num_cells;}
-   if (l > num_cells) {l = l - num_cells;}
-   if (k > num_cells) {k = k - num_cells;}
+   if (j >= num_cells) {j = j - num_cells;}
+   if (l >= num_cells) {l = l - num_cells;}
+   if (k >= num_cells) {k = k - num_cells;}
 
    return round(j%num_cells)*num_cells*num_cells+round(l%num_cells)*num_cells+round(k%num_cells);
 }

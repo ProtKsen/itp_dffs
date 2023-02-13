@@ -114,13 +114,11 @@ double sepnodes(const Node& p1, const Node& p2, const int lboxx,
    else if (sepy < -0.5 * lboxy) {
       sepy = sepy + lboxy;
    }
-   if (periodicz) {               
-      if (sepz > 0.5 * lboxz) {
-         sepz = sepz - lboxz;
-      }
-      else if (sepz < -0.5 * lboxz) {
-         sepz = sepz + lboxz;
-      }
+   if (sepz > 0.5 * lboxz) {
+      sepz = sepz - lboxz;
+   }
+   else if (sepz < -0.5 * lboxz) {
+      sepz = sepz + lboxz;
    }
 
    double dist =  sepx * sepx + sepy * sepy + sepz * sepz;
