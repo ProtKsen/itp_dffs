@@ -28,7 +28,7 @@ using std::norm;
 // Constructor for NieghData object
 
 NeighData::NeighData(const ParticleSystem& psystem, const Lattice& lattice, 
-                     const SSAGES::Snapshot& snapshot, const vector<CVPCLASS>& cvpclass)
+                     const SSAGES::Snapshot& snapshot, const vector<CVPCLASS>& cvpclass_local)
 {
    // store number of liquid neighbours and neighbour list
    int Ntot = lattice.allnodes.size();
@@ -36,7 +36,7 @@ NeighData::NeighData(const ParticleSystem& psystem, const Lattice& lattice,
    numneigh_local.resize(Ntot, 0); // num liquid neighbours for each node in proc
    numneigh.resize(Ntot, 0); // num liquid neighbours for each node
 
-   numneigh_local = getneigh_fast(lattice, psystem.pars, lattice.r_sep, cvpclass);
+   numneigh_local = getneigh_fast(lattice, psystem.pars, lattice.r_sep, cvpclass_local);
    
 	int temp_numneigh_local[Ntot];
 	int temp_numneigh[Ntot];
@@ -70,7 +70,7 @@ vector<CVNCLASS> classifynodes(const Lattice& lattice, const NeighData& neighdat
 
 vector<CVPCLASS> classifypars(const ParticleSystem& psystem)
 {
-   int n = psystem.allpars.size();
+   int n = psystem.pars.size();
    vector<CVPCLASS> parclass(n, VAPOUR);
    
    vector<double> neighs(n, 0);
