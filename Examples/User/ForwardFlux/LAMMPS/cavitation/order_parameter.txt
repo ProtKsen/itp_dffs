@@ -1,4 +1,4 @@
-# параметры для поиска кавитационной полости
+# parameters for cavitation
 r_nearest_neighbours 1.46
 latt_sep 1
 num_cells_1d 40
@@ -6,6 +6,6 @@ num_neighbours_liquid 1
 write_results True
 write_struct True
 
-# эти параметры в случае кавитации не используется, но если не задать выйдет ошибка
+# parameters for crystallization
 q6_link 0.65
 q6_num_links 6

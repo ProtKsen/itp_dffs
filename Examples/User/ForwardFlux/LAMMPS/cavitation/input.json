@@ -1,5 +1,5 @@
 {
-        "walkers" : 128,
+        "walkers" : 4,
         "input" : "cr_nvt",
         "CVs" :
         [
@@ -15,8 +15,8 @@
                         "flavor" : "DirectForwardFlux",
                         "nInterfaces" : 51,
                         "interfaces" : [],
-                        "N0Target" : 5000,
-                        "NLastSuccessful": 1,
+                        "N0Target" : 50,
+                        "NLastSuccessful": 50,
                         "trials" : [],
                         "computeInitialFlux" : true,
                         "saveTrajectories" : false,

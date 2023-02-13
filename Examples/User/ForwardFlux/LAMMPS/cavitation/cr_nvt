@@ -1,6 +1,6 @@
 # controlling read_dump
 #===============================================================
-variable	Tempo equal 0.72   # ������� �����������
+variable	Tempo equal 0.72   # temperature of fluid
 variable	seed_date equal 111017
 #---------------------------------------------------------------
 units		lj

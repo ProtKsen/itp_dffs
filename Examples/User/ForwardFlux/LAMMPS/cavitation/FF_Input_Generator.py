@@ -112,7 +112,7 @@ input_filename = "cr_nvt"
 nsurf = 51
 interfaces = np.linspace(1, 101, nsurf ) 
 trials = np.empty(nsurf , dtype=int)
-trials.fill(10000)
+trials.fill(100)
 # Use if you have many equally-spaced interfaces
 
 #Generate the new lammps input files
