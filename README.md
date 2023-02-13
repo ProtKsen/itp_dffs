@@ -47,7 +47,7 @@ make
 ### Запуск
 
 Пример запуска расчета кавитации находится в папке DFFS/Examples/User/ForwardFlux/LAMMPS/cavitation.
-* создать ссылку на исполняемый файл ssages (путь для ссылки записан в файле ssages)
+* создать ссылку на исполняемый файл ssages (путь для ссылки записан в файле ssages_way)
 
 * задать требуемые парметры в файлах input.json, FF_Input_Generator.py, order_parameter.txt
 
