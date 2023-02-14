@@ -88,14 +88,14 @@ namespace SSAGES
 
                 // set phase of particles
                 //start = std::clock();
-                std::vector<CVPCLASS> cvpclass = classifypars(psystem);
+                std::vector<CVPCLASS> cvpclass_local = classifypars(psystem);
                 //stop = std::clock();
                 //delta = (stop - start);
                 //fout_test << "cvpclass " << std::to_string(delta) << std::endl;
 
                 // calculate the number of liquid neighbours for every node
                 //start = std::clock();
-                NeighData neighdata(psystem, lattice, snapshot, cvpclass);
+                NeighData neighdata(psystem, lattice, snapshot, cvpclass_local);
                 //stop = std::clock();
                 //delta = (stop - start);
                 //fout_test << "neighdata " << std::to_string(delta) << std::endl;
