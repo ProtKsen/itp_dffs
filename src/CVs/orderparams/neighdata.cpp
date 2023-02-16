@@ -71,23 +71,24 @@ vector<CVNCLASS> classifynodes(const Lattice& lattice, const NeighData& neighdat
 vector<CVPCLASS> classifypars(const ParticleSystem& psystem)
 {
    int n = psystem.pars.size();
+   int Ntot = psystem.allpars.size();
    vector<CVPCLASS> parclass(n, VAPOUR);
    
    vector<double> neighs(n, 0);
    for (int i = 0; i < n; ++i)
    {    
-        for (int j = i+1; j < n; ++j)
+        for (int j = 0; j < Ntot; ++j)
         {
             double dist;
-            dist = psystem.simbox.sepsq(psystem.allpars[i], psystem.allpars[j]);
+            dist = psystem.simbox.sepsq(psystem.pars[i], psystem.allpars[j]);
             if (dist <= psystem.r_near_neigh * psystem.r_near_neigh)
             {
                neighs[i]++;
-               neighs[j]++;
             }
-            if (neighs[i] >= psystem.num_neighbours_liquid)
+            if (neighs[i] >= psystem.num_neighbours_liquid + 1)
             {
                parclass[i] = FLU;
+               break;
             }
         }
    }
