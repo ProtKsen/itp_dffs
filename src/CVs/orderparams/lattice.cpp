@@ -31,7 +31,7 @@ Lattice::Lattice(string pfile, const SSAGES::Snapshot& snapshot)
    // parameters
 
    std::map<std::string, std::string> params = readparams(pfile);
-   r_sep = atof(params["latt_sep"].c_str());
+   r_sep = atoi(params["latt_sep"].c_str());
    num_cells_1d = atoi(params["num_cells_1d"].c_str());
    map<string, bool> bmap;
    int numcells = pow(num_cells_1d, 3);
