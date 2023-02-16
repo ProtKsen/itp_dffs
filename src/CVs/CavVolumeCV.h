@@ -115,7 +115,7 @@ namespace SSAGES
                 //fout_test << "largestnodescluster " << std::to_string(delta) << std::endl;
 
                 // write result information about lattice
-                if (psystem.write_struct & snapshot.GetCommunicator().rank() >= 0)
+                if (psystem.write_struct & snapshot.GetCommunicator().rank() == 0)
                 {
                     std::string FileOut="Structure_" + std::to_string(snapshot.GetWalkerID()) +"_" + std::to_string(snapshot.GetCommunicator().rank()) + ".txt";
                     std::ofstream fout(FileOut, std::ios_base::out | std::ios_base::app); 
